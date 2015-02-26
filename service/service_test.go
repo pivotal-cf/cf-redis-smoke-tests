@@ -51,7 +51,7 @@ var _ = Describe("Redis Service", func() {
 		It("can create, bind to, write to, read from, unbind, and destroy a service instance using the "+planName+" plan", func() {
 			serviceInstanceName := randomName()
 
-			Eventually(cf.Cf("create-service", config.serviceName, planName, serviceInstanceName), context_setup.ScaledTimeout(timeout)).Should(Exit(0))
+			Eventually(cf.Cf("create-service", config.ServiceName, planName, serviceInstanceName), context_setup.ScaledTimeout(timeout)).Should(Exit(0))
 			Eventually(cf.Cf("bind-service", appName, serviceInstanceName), context_setup.ScaledTimeout(timeout)).Should(Exit(0))
 			Eventually(cf.Cf("start", appName), context_setup.ScaledTimeout(5*time.Minute)).Should(Exit(0))
 			assertAppIsRunning(appName)
@@ -71,7 +71,7 @@ var _ = Describe("Redis Service", func() {
 	}
 
 	Context("for each plan", func() {
-		for _, planName := range config.planNames {
+		for _, planName := range config.PlanNames {
 			AssertLifeCycleBehavior(planName)
 		}
 	})

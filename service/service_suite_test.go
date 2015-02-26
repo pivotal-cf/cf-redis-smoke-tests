@@ -1,6 +1,8 @@
 package service_test
 
 import (
+	"encoding/json"
+	"os"
 	"testing"
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/services/context_setup"
@@ -12,23 +14,24 @@ import (
 type redisTestConfig struct {
 	context_setup.IntegrationConfig
 
-	serviceName string
-	planNames   []string
+	ServiceName string   `json:"service_name"`
+	PlanNames   []string `json:"plan_names"`
 }
 
-func loadConfig() redisTestConfig {
-	return redisTestConfig{
-		IntegrationConfig: context_setup.IntegrationConfig{
-			ApiEndpoint:                   "api.10.244.0.34.xip.io",
-			AppsDomain:                    "10.244.0.34.xip.io",
-			AdminUser:                     "admin",
-			AdminPassword:                 "admin",
-			CreatePermissiveSecurityGroup: true,
-			SkipSSLValidation:             true,
-		},
-		serviceName: "p-redis",
-		planNames:   []string{"shared-vm", "dedicated-vm"},
+func loadConfig() (testConfig redisTestConfig) {
+	path := os.Getenv("CONFIG_PATH")
+	configFile, err := os.Open(path)
+	if err != nil {
+		panic(err)
 	}
+
+	decoder := json.NewDecoder(configFile)
+	err = decoder.Decode(&testConfig)
+	if err != nil {
+		panic(err)
+	}
+
+	return testConfig
 }
 
 var config = loadConfig()
