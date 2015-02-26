@@ -12,15 +12,15 @@
 		},
 		{
 			"ImportPath": "github.com/cloudfoundry-incubator/cf-test-helpers/cf",
-			"Rev": "fe22dfa39eeb2f14d73e9cc65f7ba1ac253e2b0c"
+			"Rev": "5e38da862fe8002cee5a0e1d7c7740e3e3af1ac3"
 		},
 		{
 			"ImportPath": "github.com/cloudfoundry-incubator/cf-test-helpers/runner",
-			"Rev": "fe22dfa39eeb2f14d73e9cc65f7ba1ac253e2b0c"
+			"Rev": "5e38da862fe8002cee5a0e1d7c7740e3e3af1ac3"
 		},
 		{
 			"ImportPath": "github.com/cloudfoundry-incubator/cf-test-helpers/services/context_setup",
-			"Rev": "fe22dfa39eeb2f14d73e9cc65f7ba1ac253e2b0c"
+			"Rev": "5e38da862fe8002cee5a0e1d7c7740e3e3af1ac3"
 		},
 		{
 			"ImportPath": "github.com/onsi/ginkgo",
