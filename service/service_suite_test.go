@@ -12,8 +12,6 @@ import (
 type redisTestConfig struct {
 	context_setup.IntegrationConfig
 
-	appsDomain  string
-	brokerHost  string
 	serviceName string
 	planNames   []string
 }
@@ -28,7 +26,6 @@ func loadConfig() redisTestConfig {
 			CreatePermissiveSecurityGroup: true,
 			SkipSSLValidation:             true,
 		},
-		brokerHost:  "10.244.3.46",
 		serviceName: "p-redis",
 		planNames:   []string{"shared-vm", "dedicated-vm"},
 	}
