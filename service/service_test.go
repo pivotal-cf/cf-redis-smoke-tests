@@ -40,7 +40,7 @@ var _ = Describe("Redis Service", func() {
 
 	BeforeEach(func() {
 		appName = randomName()
-		Eventually(cf.Cf("push", appName, "-m", "256M", "-p", appPath, "-no-start"), context_setup.ScaledTimeout(timeout)).Should(Exit(0))
+		Eventually(cf.Cf("push", appName, "-m", "256M", "-p", appPath, "-s", "cflinuxfs2", "-no-start"), context_setup.ScaledTimeout(timeout)).Should(Exit(0))
 	})
 
 	AfterEach(func() {
