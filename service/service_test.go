@@ -28,13 +28,13 @@ var _ = Describe("Redis Service", func() {
 	}
 
 	appUri := func(appName string) string {
-		return "http://" + appName + "." + config.AppsDomain
+		return "https://" + appName + "." + config.AppsDomain
 	}
 
 	assertAppIsRunning := func(appName string) {
 		pingUri := appUri(appName) + "/ping"
 		fmt.Println("Checking that the app is responding at url: ", pingUri)
-		Eventually(runner.Curl(pingUri), context_setup.ScaledTimeout(timeout), retryInterval).Should(Say("key not present"))
+		Eventually(runner.Curl(pingUri, "-k"), context_setup.ScaledTimeout(timeout), retryInterval).Should(Say("key not present"))
 		fmt.Println("\n")
 	}
 
@@ -58,11 +58,11 @@ var _ = Describe("Redis Service", func() {
 
 			uri := appUri(appName) + "/mykey"
 			fmt.Println("Posting to url: ", uri)
-			Eventually(runner.Curl("-d", "data=myvalue", "-X", "PUT", uri), context_setup.ScaledTimeout(timeout), retryInterval).Should(Say("success"))
+			Eventually(runner.Curl("-d", "data=myvalue", "-X", "PUT", uri, "-k"), context_setup.ScaledTimeout(timeout), retryInterval).Should(Say("success"))
 			fmt.Println("\n")
 
 			fmt.Println("Getting from url: ", uri)
-			Eventually(runner.Curl(uri), context_setup.ScaledTimeout(timeout), retryInterval).Should(Say("myvalue"))
+			Eventually(runner.Curl(uri, "-k"), context_setup.ScaledTimeout(timeout), retryInterval).Should(Say("myvalue"))
 			fmt.Println("\n")
 
 			Eventually(cf.Cf("unbind-service", appName, serviceInstanceName), context_setup.ScaledTimeout(timeout)).Should(Exit(0))
