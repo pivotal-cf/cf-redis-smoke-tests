@@ -37,7 +37,7 @@ func loadConfig() (testConfig redisTestConfig) {
 var config = loadConfig()
 
 func TestService(t *testing.T) {
-	context_setup.TimeoutScale = 1
+	context_setup.TimeoutScale = 3
 	context_setup.SetupEnvironment(context_setup.NewContext(config.IntegrationConfig, "p-redis-smoke-tests"))
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "P-Redis Smoke Tests")
