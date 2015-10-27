@@ -51,22 +51,36 @@ var _ = Describe("Redis Service", func() {
 		It("can create, bind to, write to, read from, unbind, and destroy a service instance using the "+planName+" plan", func() {
 			serviceInstanceName := randomName()
 
-			Eventually(cf.Cf("create-service", config.ServiceName, planName, serviceInstanceName), context_setup.ScaledTimeout(timeout)).Should(Exit(0))
-			Eventually(cf.Cf("bind-service", appName, serviceInstanceName), context_setup.ScaledTimeout(timeout)).Should(Exit(0))
-			Eventually(cf.Cf("start", appName), context_setup.ScaledTimeout(5*time.Minute)).Should(Exit(0))
-			assertAppIsRunning(appName)
+			createServiceSession := cf.Cf("create-service", config.ServiceName, planName, serviceInstanceName)
+			createServiceSession.Wait(context_setup.ScaledTimeout(timeout))
 
-			uri := appUri(appName) + "/mykey"
-			fmt.Println("Posting to url: ", uri)
-			Eventually(runner.Curl("-d", "data=myvalue", "-X", "PUT", uri, "-k"), context_setup.ScaledTimeout(timeout), retryInterval).Should(Say("success"))
-			fmt.Println("\n")
+			createServiceStdout := createServiceSession.Out
 
-			fmt.Println("Getting from url: ", uri)
-			Eventually(runner.Curl(uri, "-k"), context_setup.ScaledTimeout(timeout), retryInterval).Should(Say("myvalue"))
-			fmt.Println("\n")
+			select {
+			case <-createServiceStdout.Detect("FAILED"):
+				Eventually(createServiceSession, context_setup.ScaledTimeout(timeout)).Should(Say("10001"))
+				Eventually(createServiceSession, context_setup.ScaledTimeout(timeout)).Should(Exit(1))
+				fmt.Println("No Plan Instances available for testing plan:", planName)
+			case <-createServiceStdout.Detect("OK"):
+				Eventually(createServiceSession, context_setup.ScaledTimeout(timeout)).Should(Exit(0))
+				Eventually(cf.Cf("bind-service", appName, serviceInstanceName), context_setup.ScaledTimeout(timeout)).Should(Exit(0))
+				Eventually(cf.Cf("start", appName), context_setup.ScaledTimeout(5*time.Minute)).Should(Exit(0))
+				assertAppIsRunning(appName)
 
-			Eventually(cf.Cf("unbind-service", appName, serviceInstanceName), context_setup.ScaledTimeout(timeout)).Should(Exit(0))
-			Eventually(cf.Cf("delete-service", "-f", serviceInstanceName), context_setup.ScaledTimeout(timeout)).Should(Exit(0))
+				uri := appUri(appName) + "/mykey"
+				fmt.Println("Posting to url: ", uri)
+				Eventually(runner.Curl("-d", "data=myvalue", "-X", "PUT", uri, "-k"), context_setup.ScaledTimeout(timeout), retryInterval).Should(Say("success"))
+				fmt.Println("\n")
+
+				fmt.Println("Getting from url: ", uri)
+				Eventually(runner.Curl(uri, "-k"), context_setup.ScaledTimeout(timeout), retryInterval).Should(Say("myvalue"))
+				fmt.Println("\n")
+
+				Eventually(cf.Cf("unbind-service", appName, serviceInstanceName), context_setup.ScaledTimeout(timeout)).Should(Exit(0))
+				Eventually(cf.Cf("delete-service", "-f", serviceInstanceName), context_setup.ScaledTimeout(timeout)).Should(Exit(0))
+			}
+			createServiceStdout.CancelDetects()
+
 		})
 	}
 
