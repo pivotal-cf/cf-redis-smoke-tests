@@ -54,7 +54,7 @@ func NewContext(config IntegrationConfig, prefix string) *ConfiguredContext {
 		spaceName:        fmt.Sprintf("%s-SPACE-%d-%s", prefix, node, timeTag),
 
 		regularUserUsername: fmt.Sprintf("%s-USER-%d-%s", prefix, node, timeTag),
-		regularUserPassword: "meow",
+		regularUserPassword: "6S5CURVjP7.5.05Ip61YxZph.65Tuv4.rCsXYP7A0.G1..tT8fhhhhhhcf......",
 
 		securityGroupName: fmt.Sprintf("%s-SECURITY_GROUP-%d-%s", prefix, node, timeTag),
 
