@@ -2,6 +2,7 @@ package service_test
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/pborman/uuid/uuid"
@@ -36,7 +37,9 @@ var _ = Describe("Redis Service", func() {
 	assertAppIsRunning := func(appName string) {
 		pingUri := appUri(appName) + "/ping"
 		fmt.Println("Checking that the app is responding at url: ", pingUri)
-		Eventually(runner.Curl(pingUri, "-k"), shortTimeout, retryInterval).Should(Say("key not present"), "Test app deployed but did not respond in time")
+		Eventually(runner.Curl(pingUri, "-k"), shortTimeout, retryInterval).Should(Say("key not present"),
+			"Test app deployed but did not respond in time",
+		)
 		fmt.Println()
 	}
 
@@ -68,7 +71,7 @@ var _ = Describe("Redis Service", func() {
 	})
 
 	AssertLifeCycleBehavior := func(planName string) {
-		It("can create, bind to, write to, read from, unbind, and destroy a service instance using the "+planName+" plan", func() {
+		It(strings.ToUpper(planName)+": create, bind to, write to, read from, unbind, and destroy a service instance", func() {
 			serviceInstanceName := randomName()
 
 			createServiceSession := cf.Cf("create-service", redisConfig.ServiceName, planName, serviceInstanceName)
