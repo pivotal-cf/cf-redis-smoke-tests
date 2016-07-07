@@ -45,14 +45,14 @@ var _ = Describe("Redis Service", func() {
 		Eventually(cf.Cf("auth", testConfig.AdminUser, testConfig.AdminPassword), shortTimeout).Should(Exit(0), "Failed to `cf auth` with target Cloud Foundry")
 		Eventually(cf.Cf("create-org", testConfig.OrgName), shortTimeout).Should(Exit(0), "Failed to create CF test org")
 		Eventually(cf.Cf("target", "-o", testConfig.OrgName)).Should(Exit(0))
-		Eventually(cf.Cf("create-space", "dave"), shortTimeout).Should(Exit(0), "Failed to create CF test space")
+		Eventually(cf.Cf("create-space", testConfig.SpaceName), shortTimeout).Should(Exit(0), "Failed to create CF test space")
 	}
 
 	BeforeSuite(func() {
 		createTestOrgAndSpace()
 
 		context = services.NewContext(testConfig, "redis-test")
-		// context.Setup()
+		context.Setup()
 	})
 
 	BeforeEach(func() {
@@ -64,9 +64,9 @@ var _ = Describe("Redis Service", func() {
 		Eventually(cf.Cf("delete", appName, "-f"), shortTimeout).Should(Exit(0))
 	})
 
-	// AfterSuite(func() {
-	// 	context.Teardown()
-	// })
+	AfterSuite(func() {
+		context.Teardown()
+	})
 
 	AssertLifeCycleBehavior := func(planName string) {
 		It("can create, bind to, write to, read from, unbind, and destroy a service instance using the "+planName+" plan", func() {
