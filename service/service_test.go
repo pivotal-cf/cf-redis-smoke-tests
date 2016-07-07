@@ -8,6 +8,7 @@ import (
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/runner"
+	"github.com/cloudfoundry-incubator/cf-test-helpers/services"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -22,13 +23,14 @@ var _ = Describe("Redis Service", func() {
 	var appPath = "../assets/cf-redis-example-app"
 
 	var appName string
+	var context services.Context
 
 	randomName := func() string {
 		return uuid.NewRandom().String()
 	}
 
 	appUri := func(appName string) string {
-		return "https://" + appName + "." + config.AppsDomain
+		return "https://" + appName + "." + testConfig.AppsDomain
 	}
 
 	assertAppIsRunning := func(appName string) {
@@ -37,6 +39,21 @@ var _ = Describe("Redis Service", func() {
 		Eventually(runner.Curl(pingUri, "-k"), shortTimeout, retryInterval).Should(Say("key not present"))
 		fmt.Println()
 	}
+
+	createTestOrgAndSpace := func() {
+		fmt.Println(testConfig)
+		Eventually(cf.Cf("auth", testConfig.AdminUser, testConfig.AdminPassword), shortTimeout).Should(Exit(0), "Failed to `cf auth` with target Cloud Foundry")
+		Eventually(cf.Cf("create-org", testConfig.OrgName), shortTimeout).Should(Exit(0), "Failed to create CF test org")
+		Eventually(cf.Cf("target", "-o", testConfig.OrgName)).Should(Exit(0))
+		Eventually(cf.Cf("create-space", "dave"), shortTimeout).Should(Exit(0), "Failed to create CF test space")
+	}
+
+	BeforeSuite(func() {
+		createTestOrgAndSpace()
+
+		context = services.NewContext(testConfig, "redis-test")
+		// context.Setup()
+	})
 
 	BeforeEach(func() {
 		appName = randomName()
@@ -47,11 +64,15 @@ var _ = Describe("Redis Service", func() {
 		Eventually(cf.Cf("delete", appName, "-f"), shortTimeout).Should(Exit(0))
 	})
 
+	// AfterSuite(func() {
+	// 	context.Teardown()
+	// })
+
 	AssertLifeCycleBehavior := func(planName string) {
 		It("can create, bind to, write to, read from, unbind, and destroy a service instance using the "+planName+" plan", func() {
 			serviceInstanceName := randomName()
 
-			createServiceSession := cf.Cf("create-service", config.ServiceName, planName, serviceInstanceName)
+			createServiceSession := cf.Cf("create-service", redisConfig.ServiceName, planName, serviceInstanceName)
 			createServiceSession.Wait(shortTimeout)
 
 			createServiceStdout := createServiceSession.Out
@@ -85,7 +106,7 @@ var _ = Describe("Redis Service", func() {
 	}
 
 	Context("for each plan", func() {
-		for _, planName := range config.PlanNames {
+		for _, planName := range redisConfig.PlanNames {
 			AssertLifeCycleBehavior(planName)
 		}
 	})

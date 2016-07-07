@@ -5,15 +5,12 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudfoundry-incubator/cf-test-helpers/services/context_setup"
-
+	"github.com/cloudfoundry-incubator/cf-test-helpers/services"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
 
 type redisTestConfig struct {
-	context_setup.IntegrationConfig
-
 	ServiceName string   `json:"service_name"`
 	PlanNames   []string `json:"plan_names"`
 }
@@ -34,11 +31,13 @@ func loadConfig() (testConfig redisTestConfig) {
 	return testConfig
 }
 
-var config = loadConfig()
+var testConfig services.Config
+var redisConfig = loadConfig()
 
 func TestService(t *testing.T) {
-	context_setup.TimeoutScale = 3
-	context_setup.SetupEnvironment(context_setup.NewContext(config.IntegrationConfig, "p-redis-smoke-tests"))
+	services.LoadConfig(os.Getenv("CONFIG_PATH"), &testConfig)
+	// context_setup.TimeoutScale = 3
+	// context_setup.SetupEnvironment(context_setup.NewContext(config.IntegrationConfig, "p-redis-smoke-tests"))
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "P-Redis Smoke Tests")
 }
