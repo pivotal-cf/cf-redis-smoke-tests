@@ -8,7 +8,6 @@ import (
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/runner"
-	"github.com/cloudfoundry-incubator/cf-test-helpers/services/context_setup"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -17,7 +16,8 @@ import (
 )
 
 var _ = Describe("Redis Service", func() {
-	var timeout = time.Second * 60
+	var shortTimeout = time.Second * 180
+	var longTimeout = time.Minute * 15
 	var retryInterval = time.Second * 1
 	var appPath = "../assets/cf-redis-example-app"
 
@@ -34,17 +34,17 @@ var _ = Describe("Redis Service", func() {
 	assertAppIsRunning := func(appName string) {
 		pingUri := appUri(appName) + "/ping"
 		fmt.Println("Checking that the app is responding at url: ", pingUri)
-		Eventually(runner.Curl(pingUri, "-k"), context_setup.ScaledTimeout(timeout), retryInterval).Should(Say("key not present"))
-		fmt.Println("\n")
+		Eventually(runner.Curl(pingUri, "-k"), shortTimeout, retryInterval).Should(Say("key not present"))
+		fmt.Println()
 	}
 
 	BeforeEach(func() {
 		appName = randomName()
-		Eventually(cf.Cf("push", appName, "-m", "256M", "-p", appPath, "-s", "cflinuxfs2", "-no-start"), context_setup.ScaledTimeout(timeout)).Should(Exit(0))
+		Eventually(cf.Cf("push", appName, "-m", "256M", "-p", appPath, "-s", "cflinuxfs2", "-no-start"), shortTimeout).Should(Exit(0), "Failed to `cf push` test app")
 	})
 
 	AfterEach(func() {
-		Eventually(cf.Cf("delete", appName, "-f"), context_setup.ScaledTimeout(timeout)).Should(Exit(0))
+		Eventually(cf.Cf("delete", appName, "-f"), shortTimeout).Should(Exit(0))
 	})
 
 	AssertLifeCycleBehavior := func(planName string) {
@@ -52,32 +52,32 @@ var _ = Describe("Redis Service", func() {
 			serviceInstanceName := randomName()
 
 			createServiceSession := cf.Cf("create-service", config.ServiceName, planName, serviceInstanceName)
-			createServiceSession.Wait(context_setup.ScaledTimeout(timeout))
+			createServiceSession.Wait(shortTimeout)
 
 			createServiceStdout := createServiceSession.Out
 
 			select {
 			case <-createServiceStdout.Detect("FAILED"):
-				Eventually(createServiceSession, context_setup.ScaledTimeout(timeout)).Should(Say("instance limit for this service has been reached"))
-				Eventually(createServiceSession, context_setup.ScaledTimeout(timeout)).Should(Exit(1))
+				Eventually(createServiceSession, shortTimeout).Should(Say("instance limit for this service has been reached"))
+				Eventually(createServiceSession, shortTimeout).Should(Exit(1))
 				fmt.Println("No Plan Instances available for testing plan:", planName)
 			case <-createServiceStdout.Detect("OK"):
-				Eventually(createServiceSession, context_setup.ScaledTimeout(timeout)).Should(Exit(0))
-				Eventually(cf.Cf("bind-service", appName, serviceInstanceName), context_setup.ScaledTimeout(timeout)).Should(Exit(0))
-				Eventually(cf.Cf("start", appName), context_setup.ScaledTimeout(5*time.Minute)).Should(Exit(0))
+				Eventually(createServiceSession, shortTimeout).Should(Exit(0))
+				Eventually(cf.Cf("bind-service", appName, serviceInstanceName), shortTimeout).Should(Exit(0))
+				Eventually(cf.Cf("start", appName), longTimeout).Should(Exit(0))
 				assertAppIsRunning(appName)
 
 				uri := appUri(appName) + "/mykey"
 				fmt.Println("Posting to url: ", uri)
-				Eventually(runner.Curl("-d", "data=myvalue", "-X", "PUT", uri, "-k"), context_setup.ScaledTimeout(timeout), retryInterval).Should(Say("success"))
-				fmt.Println("\n")
+				Eventually(runner.Curl("-d", "data=myvalue", "-X", "PUT", uri, "-k"), shortTimeout, retryInterval).Should(Say("success"))
+				fmt.Println()
 
 				fmt.Println("Getting from url: ", uri)
-				Eventually(runner.Curl(uri, "-k"), context_setup.ScaledTimeout(timeout), retryInterval).Should(Say("myvalue"))
-				fmt.Println("\n")
+				Eventually(runner.Curl(uri, "-k"), shortTimeout, retryInterval).Should(Say("myvalue"))
+				fmt.Println()
 
-				Eventually(cf.Cf("unbind-service", appName, serviceInstanceName), context_setup.ScaledTimeout(timeout)).Should(Exit(0))
-				Eventually(cf.Cf("delete-service", "-f", serviceInstanceName), context_setup.ScaledTimeout(timeout)).Should(Exit(0))
+				Eventually(cf.Cf("unbind-service", appName, serviceInstanceName), shortTimeout).Should(Exit(0))
+				Eventually(cf.Cf("delete-service", "-f", serviceInstanceName), shortTimeout).Should(Exit(0))
 			}
 			createServiceStdout.CancelDetects()
 
