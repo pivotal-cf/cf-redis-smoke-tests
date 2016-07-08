@@ -50,8 +50,20 @@ var _ = Describe("Redis Service", func() {
 		Eventually(cf.Cf("create-space", testConfig.SpaceName), shortTimeout).Should(Exit(0), "Failed to create CF test space")
 	}
 
+	createAndBindSecurityGroup := func() {
+		Eventually(cf.Cf("auth", testConfig.AdminUser, testConfig.AdminPassword), shortTimeout).Should(Exit(0), "Failed to `cf auth` with target Cloud Foundry")
+		Eventually(cf.Cf("create-security-group", "redis-smoke-tests-sg", securityGroupConfigPath), shortTimeout).Should(Exit(0), "Failed to create security group")
+		Eventually(cf.Cf("bind-security-group", "redis-smoke-tests-sg", testConfig.OrgName, testConfig.SpaceName), shortTimeout).Should(Exit(0), "Failed to bind security group to space")
+	}
+
+	deleteSecurityGroup := func() {
+		Eventually(cf.Cf("auth", testConfig.AdminUser, testConfig.AdminPassword), shortTimeout).Should(Exit(0), "Failed to `cf auth` with target Cloud Foundry")
+		Eventually(cf.Cf("delete-security-group", "redis-smoke-tests-sg", "-f"), shortTimeout).Should(Exit(0), "Failed to remove security group")
+	}
+
 	BeforeSuite(func() {
 		createTestOrgAndSpace()
+		createAndBindSecurityGroup()
 
 		context = services.NewContext(testConfig, "redis-test")
 		context.Setup()
@@ -68,6 +80,7 @@ var _ = Describe("Redis Service", func() {
 
 	AfterSuite(func() {
 		context.Teardown()
+		deleteSecurityGroup()
 	})
 
 	AssertLifeCycleBehavior := func(planName string) {

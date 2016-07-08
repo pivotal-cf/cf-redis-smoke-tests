@@ -10,5 +10,11 @@
   "admin_password": "admin",
   "space_name": "redis-smoke-test-space",
   "org_name": "system",
-  "skip_ssl_validation": true
+  "skip_ssl_validation": true,
+  "create_permissive_security_group": false,
+  "security_groups": [{
+    "protocol": "tcp",
+    "destination": "10.0.0.0-10.255.255.255",
+    "ports": "443"
+  }]
 }
