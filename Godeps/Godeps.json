@@ -1,13 +1,14 @@
 {
 	"ImportPath": "github.com/pivotal-cf/cf-redis-smoke-tests",
-	"GoVersion": "go1.4.1",
+	"GoVersion": "go1.6.2",
 	"Packages": [
 		"./..."
 	],
 	"Deps": [
 		{
-			"ImportPath": "github.com/pborman/uuid/uuid",
-			"Rev": "0b37a597426901e8bec92cd0094bcce2b0a6471c"
+			"ImportPath": "github.com/pborman/uuid",
+			"Comment": "v1.0-11-gc55201b",
+			"Rev": "c55201b036063326c5b1b89ccfe45a184973d073"
 		},
 		{
 			"ImportPath": "github.com/cloudfoundry-incubator/cf-test-helpers/cf",

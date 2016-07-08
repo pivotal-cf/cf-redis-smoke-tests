@@ -5,7 +5,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/pborman/uuid/uuid"
+	"github.com/pborman/uuid"
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/runner"
