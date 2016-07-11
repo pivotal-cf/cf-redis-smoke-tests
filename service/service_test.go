@@ -44,6 +44,13 @@ var _ = Describe("Redis Service", func() {
 	}
 
 	createTestOrgAndSpace := func() {
+		apiCmd := []string{"api", testConfig.ApiEndpoint}
+
+		if testConfig.SkipSSLValidation {
+			apiCmd = append(apiCmd, "--skip-ssl-validation")
+		}
+
+		Eventually(cf.Cf(apiCmd...), shortTimeout).Should(Exit(0), "Failed to target Cloud Foundry")
 		Eventually(cf.Cf("auth", testConfig.AdminUser, testConfig.AdminPassword), shortTimeout).Should(Exit(0), "Failed to `cf auth` with target Cloud Foundry")
 		Eventually(cf.Cf("create-org", testConfig.OrgName), shortTimeout).Should(Exit(0), "Failed to create CF test org")
 		Eventually(cf.Cf("target", "-o", testConfig.OrgName)).Should(Exit(0))
