@@ -1,4 +1,4 @@
-package context_setup_test
+package runner_test
 
 import (
 	. "github.com/onsi/ginkgo"
@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-func TestContextSetup(t *testing.T) {
+func TestRunner(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "ContextSetup Suite")
+	RunSpecs(t, "Runner Suite")
 }
