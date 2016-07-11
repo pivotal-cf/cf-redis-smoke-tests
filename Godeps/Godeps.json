@@ -7,14 +7,6 @@
 	],
 	"Deps": [
 		{
-			"ImportPath": "github.com/cloudfoundry-incubator/cf-test-helpers/cf",
-			"Rev": "5e38da862fe8002cee5a0e1d7c7740e3e3af1ac3"
-		},
-		{
-			"ImportPath": "github.com/cloudfoundry-incubator/cf-test-helpers/runner",
-			"Rev": "5e38da862fe8002cee5a0e1d7c7740e3e3af1ac3"
-		},
-		{
 			"ImportPath": "github.com/onsi/ginkgo",
 			"Comment": "v1.1.0-28-g7d3d52b",
 			"Rev": "7d3d52b3a3a79d745c2a03ee81b5bc2086642201"
@@ -161,15 +153,15 @@
 		},
 		{
 			"ImportPath": "github.com/pivotal-cf-experimental/cf-test-helpers/cf",
-			"Rev": "2c5318b3818105c765e3611328805f1ceddd04b7"
+			"Rev": "9b80e97c6cb94a09fb6a1b04bd28c56fee62717e"
 		},
 		{
 			"ImportPath": "github.com/pivotal-cf-experimental/cf-test-helpers/runner",
-			"Rev": "2c5318b3818105c765e3611328805f1ceddd04b7"
+			"Rev": "9b80e97c6cb94a09fb6a1b04bd28c56fee62717e"
 		},
 		{
 			"ImportPath": "github.com/pivotal-cf-experimental/cf-test-helpers/services",
-			"Rev": "2c5318b3818105c765e3611328805f1ceddd04b7"
+			"Rev": "9b80e97c6cb94a09fb6a1b04bd28c56fee62717e"
 		}
 	]
 }

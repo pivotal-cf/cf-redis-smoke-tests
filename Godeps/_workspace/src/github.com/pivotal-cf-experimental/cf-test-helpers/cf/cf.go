@@ -1,7 +1,7 @@
 package cf
 
 import (
-	"github.com/cloudfoundry-incubator/cf-test-helpers/runner"
+	"github.com/pivotal-cf-experimental/cf-test-helpers/runner"
 	"github.com/onsi/gomega/gexec"
 )
 

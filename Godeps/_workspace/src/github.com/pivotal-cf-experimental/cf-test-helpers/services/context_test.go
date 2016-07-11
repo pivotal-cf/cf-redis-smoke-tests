@@ -6,7 +6,7 @@ import (
 	"os/exec"
 	"strings"
 
-	"github.com/cloudfoundry-incubator/cf-test-helpers/services"
+	"github.com/pivotal-cf-experimental/cf-test-helpers/services"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -14,7 +14,7 @@ import (
 
 	"time"
 
-	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
+	"github.com/pivotal-cf-experimental/cf-test-helpers/cf"
 )
 
 type apiRequestInputs struct {

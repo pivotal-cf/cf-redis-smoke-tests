@@ -4,10 +4,10 @@ import (
 	"os/exec"
 	"time"
 
-	. "github.com/cloudfoundry-incubator/cf-test-helpers/cf"
-	"github.com/cloudfoundry-incubator/cf-test-helpers/runner"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	. "github.com/pivotal-cf-experimental/cf-test-helpers/cf"
+	"github.com/pivotal-cf-experimental/cf-test-helpers/runner"
 )
 
 var _ = Describe("ApiRequest", func() {

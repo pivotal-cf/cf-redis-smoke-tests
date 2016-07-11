@@ -1,7 +1,7 @@
 package services_test
 
 import (
-	"github.com/cloudfoundry-incubator/cf-test-helpers/services"
+	"github.com/pivotal-cf-experimental/cf-test-helpers/services"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )

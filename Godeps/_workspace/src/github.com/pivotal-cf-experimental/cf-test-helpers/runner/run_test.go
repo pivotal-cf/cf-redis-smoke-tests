@@ -3,7 +3,7 @@ package runner_test
 import (
 	"time"
 
-	"github.com/cloudfoundry-incubator/cf-test-helpers/runner"
+	"github.com/pivotal-cf-experimental/cf-test-helpers/runner"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
