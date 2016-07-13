@@ -37,8 +37,9 @@ var _ = Describe("Redis Service", func() {
 	assertAppIsRunning := func(appName string) {
 		pingUri := appUri(appName) + "/ping"
 		fmt.Println("Checking that the app is responding at url: ", pingUri)
-		Eventually(runner.Curl(pingUri, "-k"), shortTimeout, retryInterval).Should(Say("key not present"),
-			"Test app deployed but did not respond in time",
+		Eventually(runner.Curl(pingUri, "-k"), shortTimeout, retryInterval).Should(
+			Say("key not present"),
+			`{"FailReason": "Test app deployed but did not respond in time"}`,
 		)
 		fmt.Println()
 	}
@@ -50,22 +51,65 @@ var _ = Describe("Redis Service", func() {
 			apiCmd = append(apiCmd, "--skip-ssl-validation")
 		}
 
-		Eventually(cf.Cf(apiCmd...), shortTimeout).Should(Exit(0), "Failed to target Cloud Foundry")
-		Eventually(cf.Cf("auth", testConfig.AdminUser, testConfig.AdminPassword), shortTimeout).Should(Exit(0), "Failed to `cf auth` with target Cloud Foundry")
-		Eventually(cf.Cf("create-org", testConfig.OrgName), shortTimeout).Should(Exit(0), "Failed to create CF test org")
-		Eventually(cf.Cf("target", "-o", testConfig.OrgName)).Should(Exit(0))
-		Eventually(cf.Cf("create-space", testConfig.SpaceName), shortTimeout).Should(Exit(0), "Failed to create CF test space")
+		Eventually(cf.Cf(apiCmd...), shortTimeout).Should(
+			Exit(0),
+			`{"FailReason": "Failed to target Cloud Foundry"}`,
+		)
+
+		Eventually(cf.Cf("auth", testConfig.AdminUser, testConfig.AdminPassword), shortTimeout).Should(
+			Exit(0),
+			"{\"FailReason\": \"Failed to `cf auth` with target Cloud Foundry\"}",
+		)
+
+		Eventually(cf.Cf("create-org", testConfig.OrgName), shortTimeout).Should(
+			Exit(0),
+			`{"FailReason": "Failed to create CF test org"}`,
+		)
+
+		Eventually(cf.Cf("target", "-o", testConfig.OrgName)).Should(
+			Exit(0),
+			`{"FailReason": "Failed to target test org"}`,
+		)
+
+		Eventually(cf.Cf("create-space", testConfig.SpaceName), shortTimeout).Should(
+			Exit(0),
+			`{"FailReason": "Failed to create CF test space"}`,
+		)
 	}
 
 	createAndBindSecurityGroup := func() {
-		Eventually(cf.Cf("auth", testConfig.AdminUser, testConfig.AdminPassword), shortTimeout).Should(Exit(0), "Failed to `cf auth` with target Cloud Foundry")
-		Eventually(cf.Cf("create-security-group", "redis-smoke-tests-sg", securityGroupConfigPath), shortTimeout).Should(Exit(0), "Failed to create security group")
-		Eventually(cf.Cf("bind-security-group", "redis-smoke-tests-sg", testConfig.OrgName, testConfig.SpaceName), shortTimeout).Should(Exit(0), "Failed to bind security group to space")
+		Eventually(cf.Cf("auth", testConfig.AdminUser, testConfig.AdminPassword), shortTimeout).Should(
+			Exit(0),
+			"{\"FailReason\": \"Failed to `cf auth` with target Cloud Foundry\"}",
+		)
+
+		Eventually(
+			cf.Cf("create-security-group", "redis-smoke-tests-sg", securityGroupConfigPath),
+			shortTimeout,
+		).Should(
+			Exit(0),
+			`{"FailReason": "Failed to create security group"}`,
+		)
+
+		Eventually(
+			cf.Cf("bind-security-group", "redis-smoke-tests-sg", testConfig.OrgName, testConfig.SpaceName),
+			shortTimeout,
+		).Should(
+			Exit(0),
+			`{"FailReason": "Failed to bind security group to space"}`,
+		)
 	}
 
 	deleteSecurityGroup := func() {
-		Eventually(cf.Cf("auth", testConfig.AdminUser, testConfig.AdminPassword), shortTimeout).Should(Exit(0), "Failed to `cf auth` with target Cloud Foundry")
-		Eventually(cf.Cf("delete-security-group", "redis-smoke-tests-sg", "-f"), shortTimeout).Should(Exit(0), "Failed to remove security group")
+		Eventually(cf.Cf("auth", testConfig.AdminUser, testConfig.AdminPassword), shortTimeout).Should(
+			Exit(0),
+			"{\"FailReason\": \"Failed to `cf auth` with target Cloud Foundry\"}",
+		)
+
+		Eventually(cf.Cf("delete-security-group", "redis-smoke-tests-sg", "-f"), shortTimeout).Should(
+			Exit(0),
+			`{"FailReason": "Failed to remove security group"}`,
+		)
 	}
 
 	BeforeSuite(func() {
@@ -78,11 +122,20 @@ var _ = Describe("Redis Service", func() {
 
 	BeforeEach(func() {
 		appName = randomName()
-		Eventually(cf.Cf("push", appName, "-m", "256M", "-p", appPath, "-s", "cflinuxfs2", "-no-start"), shortTimeout).Should(Exit(0), "Failed to `cf push` test app")
+		Eventually(
+			cf.Cf("push", appName, "-m", "256M", "-p", appPath, "-s", "cflinuxfs2", "-no-start"),
+			shortTimeout,
+		).Should(
+			Exit(0),
+			"{\"FailReason\": \"Failed to `cf push` test app\"}",
+		)
 	})
 
 	AfterEach(func() {
-		Eventually(cf.Cf("delete", appName, "-f"), shortTimeout).Should(Exit(0), "Failed to `cf delete` test app")
+		Eventually(cf.Cf("delete", appName, "-f"), shortTimeout).Should(
+			Exit(0),
+			"{\"FailReason\": \"Failed to `cf delete` test app\"}",
+		)
 	})
 
 	AfterSuite(func() {
@@ -101,43 +154,62 @@ var _ = Describe("Redis Service", func() {
 
 			select {
 			case <-createServiceStdout.Detect("FAILED"):
-				Eventually(createServiceSession, shortTimeout).Should(Say("instance limit for this service has been reached"),
-					"Failed to bind Redis service instance to test app",
+				Eventually(createServiceSession, shortTimeout).Should(
+					Say("instance limit for this service has been reached"),
+					`{"FailReason": "Failed to bind Redis service instance to test app"}`,
 				)
 				Eventually(createServiceSession, shortTimeout).Should(Exit(1))
-				fmt.Println("No Plan Instances available for testing " + planName + " plan")
+				fmt.Printf("No Plan Instances available for testing %s plan\n", planName)
 
 			case <-createServiceStdout.Detect("OK"):
-				Eventually(createServiceSession, shortTimeout).Should(Exit(0),
-					"Failed to create Redis service instance",
+				Eventually(createServiceSession, shortTimeout).Should(
+					Exit(0),
+					`{"FailReason": "Failed to create Redis service instance"}`,
 				)
-				Eventually(cf.Cf("bind-service", appName, serviceInstanceName), shortTimeout).Should(Exit(0),
-					"Failed to bind Redis service instance to test app",
+
+				Eventually(cf.Cf("bind-service", appName, serviceInstanceName), shortTimeout).Should(
+					Exit(0),
+					`{"FailReason": "Failed to bind Redis service instance to test app"}`,
 				)
-				Eventually(cf.Cf("start", appName), longTimeout).Should(Exit(0),
-					"Failed to start test app",
+
+				Eventually(cf.Cf("start", appName), longTimeout).Should(
+					Exit(0),
+					`{"FailReason": "Failed to start test app"}`,
 				)
 
 				assertAppIsRunning(appName)
 
 				uri := appUri(appName) + "/mykey"
 				fmt.Println("Posting to url: ", uri)
-				Eventually(runner.Curl("-d", "data=myvalue", "-X", "PUT", uri, "-k"), shortTimeout, retryInterval).Should(Say("success"),
-					"Failed to write to test "+planName+" instance",
+				Eventually(
+					runner.Curl("-d", "data=myvalue", "-X", "PUT", uri, "-k"),
+					shortTimeout,
+					retryInterval,
+				).Should(
+					Say("success"),
+					fmt.Sprintf(`{"FailReason": "Failed to write to test %s instance"}`, planName),
 				)
 				fmt.Println()
-
 				fmt.Println("Getting from url: ", uri)
-				Eventually(runner.Curl(uri, "-k"), shortTimeout, retryInterval).Should(Say("myvalue"),
-					"Failed to read from test "+planName+" instance",
+
+				Eventually(
+					runner.Curl(uri, "-k"),
+					shortTimeout,
+					retryInterval,
+				).Should(
+					Say("myvalue"),
+					fmt.Sprintf(`{"FailReason": "Failed to read from test %s instance"}`, planName),
 				)
 				fmt.Println()
 
-				Eventually(cf.Cf("unbind-service", appName, serviceInstanceName), shortTimeout).Should(Exit(0),
-					"Failed to unbind "+planName+" instance from test app",
+				Eventually(cf.Cf("unbind-service", appName, serviceInstanceName), shortTimeout).Should(
+					Exit(0),
+					fmt.Sprintf(`{"FailReason": "Failed to unbind %s instance from test app"}`, planName),
 				)
-				Eventually(cf.Cf("delete-service", "-f", serviceInstanceName), shortTimeout).Should(Exit(0),
-					"Failed to delete test "+planName+" instance",
+
+				Eventually(cf.Cf("delete-service", "-f", serviceInstanceName), shortTimeout).Should(
+					Exit(0),
+					fmt.Sprintf(`{"FailReason": "Failed to delete test %s instance"}`, planName),
 				)
 			}
 			createServiceStdout.CancelDetects()
