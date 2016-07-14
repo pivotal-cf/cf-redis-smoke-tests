@@ -6,7 +6,6 @@ import (
 	"io/ioutil"
 	"os"
 	"regexp"
-	"strings"
 	"testing"
 
 	. "github.com/onsi/ginkgo"
@@ -39,7 +38,6 @@ func (report *SmokeTestReport) SpecWillRun(summary *types.SpecSummary) {
 	title := summary.ComponentTexts[len(summary.ComponentTexts)-1]
 
 	fmt.Printf("START %d. %s\n", report.testCount, title)
-	fmt.Printf(strings.Join(summary.ComponentTexts, " "))
 
 }
 
@@ -50,6 +48,8 @@ func (report *SmokeTestReport) SpecDidComplete(summary *types.SpecSummary) {
 			message: summary.Failure.Message,
 		})
 	}
+	title := summary.ComponentTexts[len(summary.ComponentTexts)-1]
+	fmt.Printf("END %d. %s\n", report.testCount, title)
 }
 
 func (report *SmokeTestReport) AfterSuiteDidRun(summary *types.SetupSummary) {}
