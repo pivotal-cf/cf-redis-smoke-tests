@@ -30,9 +30,21 @@ func (report *SmokeTestReport) SpecSuiteWillBegin(
 	config config.GinkgoConfigType,
 	summary *types.SuiteSummary,
 ) {
+	report.printMessageTitle("Beginning test suite setup")
 }
 
-func (report *SmokeTestReport) BeforeSuiteDidRun(summary *types.SetupSummary) {}
+func (report *SmokeTestReport) BeforeSuiteDidRun(summary *types.SetupSummary) {
+	if summary.State == types.SpecStateFailed ||
+		summary.State == types.SpecStatePanicked ||
+		summary.State == types.SpecStateTimedOut {
+
+		report.failures = append(report.failures, failure{
+			title:   "Suite setup",
+			message: summary.Failure.Message,
+		})
+	}
+	report.printMessageTitle("Finished test suite setup")
+}
 
 func (report *SmokeTestReport) SpecWillRun(summary *types.SpecSummary) {
 	report.testCount++
@@ -54,7 +66,9 @@ func (report *SmokeTestReport) SpecDidComplete(summary *types.SpecSummary) {
 	report.printMessageTitle(message)
 }
 
-func (report *SmokeTestReport) AfterSuiteDidRun(summary *types.SetupSummary) {}
+func (report *SmokeTestReport) AfterSuiteDidRun(summary *types.SetupSummary) {
+	report.printMessageTitle("Finished suite teardown")
+}
 
 func (report *SmokeTestReport) SpecSuiteDidEnd(summary *types.SuiteSummary) {
 	matchJSON, err := regexp.Compile(`{"FailReason":\s"(.*)"}`)
