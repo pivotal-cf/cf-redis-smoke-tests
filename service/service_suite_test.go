@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 	"regexp"
+	"strings"
 	"testing"
 
 	. "github.com/onsi/ginkgo"
@@ -35,10 +36,10 @@ func (report *SmokeTestReport) BeforeSuiteDidRun(summary *types.SetupSummary) {}
 
 func (report *SmokeTestReport) SpecWillRun(summary *types.SpecSummary) {
 	report.testCount++
-	title := summary.ComponentTexts[len(summary.ComponentTexts)-1]
 
-	fmt.Printf("START %d. %s\n", report.testCount, title)
-
+	title := report.getTitleFromComponents(summary)
+	message := fmt.Sprintf("START %d. %s", report.testCount, title)
+	report.printMessageTitle(message)
 }
 
 func (report *SmokeTestReport) SpecDidComplete(summary *types.SpecSummary) {
@@ -48,8 +49,9 @@ func (report *SmokeTestReport) SpecDidComplete(summary *types.SpecSummary) {
 			message: summary.Failure.Message,
 		})
 	}
-	title := summary.ComponentTexts[len(summary.ComponentTexts)-1]
-	fmt.Printf("END %d. %s\n", report.testCount, title)
+	title := report.getTitleFromComponents(summary)
+	message := fmt.Sprintf("END %d. %s", report.testCount, title)
+	report.printMessageTitle(message)
 }
 
 func (report *SmokeTestReport) AfterSuiteDidRun(summary *types.SetupSummary) {}
@@ -62,7 +64,7 @@ func (report *SmokeTestReport) SpecSuiteDidEnd(summary *types.SuiteSummary) {
 	}
 
 	if summary.NumberOfFailedSpecs > 0 {
-		report.printFailureSummaryTitle()
+		report.printMessageTitle("Summarising Failures")
 
 		for _, failure := range report.failures {
 			fmt.Printf("\n%s\n", failure.title)
@@ -76,12 +78,18 @@ func (report *SmokeTestReport) SpecSuiteDidEnd(summary *types.SuiteSummary) {
 	}
 }
 
-func (report *SmokeTestReport) printFailureSummaryTitle() {
-	fmt.Printf("\n\n")
-	fmt.Println("|-----------------------------|")
-	fmt.Println("| Summarising failure reasons |")
-	fmt.Println("|-----------------------------|")
-	fmt.Println()
+func (report *SmokeTestReport) getTitleFromComponents(summary *types.SpecSummary) (title string) {
+	if len(summary.ComponentTexts) > 0 {
+		title = summary.ComponentTexts[len(summary.ComponentTexts)-1]
+	}
+	return
+}
+
+func (report *SmokeTestReport) printMessageTitle(message string) {
+	border := strings.Repeat("-", len(message)+2)
+	fmt.Printf("\n\n|%s|\n", border)
+	fmt.Printf("| %s |\n", message)
+	fmt.Printf("|%s|\n\n", border)
 }
 
 type redisTestConfig struct {
