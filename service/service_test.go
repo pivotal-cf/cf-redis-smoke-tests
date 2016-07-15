@@ -18,7 +18,7 @@ import (
 )
 
 var _ = Describe("Redis Service", func() {
-	var shortTimeout = time.Second * 180
+	var shortTimeout = time.Minute * 3
 	var longTimeout = time.Minute * 15
 	var retryInterval = time.Second * 1
 	var appPath = "../assets/cf-redis-example-app"
@@ -66,7 +66,7 @@ var _ = Describe("Redis Service", func() {
 			`{"FailReason": "Failed to create CF test org"}`,
 		)
 
-		Eventually(cf.Cf("target", "-o", testConfig.OrgName)).Should(
+		Eventually(cf.Cf("target", "-o", testConfig.OrgName), shortTimeout).Should(
 			Exit(0),
 			`{"FailReason": "Failed to target test org"}`,
 		)
