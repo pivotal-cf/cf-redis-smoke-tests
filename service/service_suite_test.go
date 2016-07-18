@@ -88,7 +88,7 @@ func (report *SmokeTestReport) SpecSuiteDidEnd(summary *types.SuiteSummary) {
 				fmt.Printf("> %s\n", failMessage[1])
 			}
 		}
-		fmt.Println()
+		fmt.Printf("\nFor help with troubleshooting, visit: https://docs.pivotal.io/redis/smoke-tests.html\n\n")
 	}
 }
 
