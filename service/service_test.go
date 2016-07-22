@@ -61,7 +61,19 @@ var _ = Describe("Redis Service", func() {
 			"{\"FailReason\": \"Failed to `cf auth` with target Cloud Foundry\"}",
 		)
 
-		Eventually(cf.Cf("create-org", testConfig.OrgName), shortTimeout).Should(
+		Eventually(cf.Cf(
+			"create-quota",
+			"redis-smoke-test-quota",
+			"-m", "10G",
+			"-r", "1000",
+			"-s", "100",
+			"--allow-paid-service-plans",
+		), shortTimeout).Should(
+			Exit(0),
+			"{\"FailReason\": \"Failed to `cf create-quota` with target Cloud Foundry\"}",
+		)
+
+		Eventually(cf.Cf("create-org", testConfig.OrgName, "-q", "redis-smoke-test-quota"), shortTimeout).Should(
 			Exit(0),
 			`{"FailReason": "Failed to create CF test org"}`,
 		)

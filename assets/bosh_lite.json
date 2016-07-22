@@ -9,7 +9,7 @@
   "admin_user": "admin",
   "admin_password": "admin",
   "space_name": "redis-smoke-test-space",
-  "org_name": "system",
+  "org_name": "redis-smoke-test-org",
   "skip_ssl_validation": true,
   "test_password": "6S5CURVjP7.5.05Ip61YxZph.65Tuv4.rCsXYP7A0.G1..tT8fhhhhhhcf......",
   "create_permissive_security_group": false,
