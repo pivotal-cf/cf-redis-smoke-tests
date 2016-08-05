@@ -5,6 +5,7 @@
     "shared-vm"
   ],
   "apps_domain": "bosh-lite.com",
+  "system_domain": "bosh-lite.com",
   "api": "api.bosh-lite.com",
   "admin_user": "admin",
   "admin_password": "admin",

@@ -1,6 +1,6 @@
 {
 	"ImportPath": "github.com/pivotal-cf/cf-redis-smoke-tests",
-	"GoVersion": "go1.6.2",
+	"GoVersion": "go1.6",
 	"GodepVersion": "v60",
 	"Packages": [
 		"./..."
@@ -153,15 +153,15 @@
 		},
 		{
 			"ImportPath": "github.com/pivotal-cf-experimental/cf-test-helpers/cf",
-			"Rev": "9b80e97c6cb94a09fb6a1b04bd28c56fee62717e"
+			"Rev": "980d4ed0a607c84d55e58c82f98739061a32054b"
 		},
 		{
 			"ImportPath": "github.com/pivotal-cf-experimental/cf-test-helpers/runner",
-			"Rev": "9b80e97c6cb94a09fb6a1b04bd28c56fee62717e"
+			"Rev": "980d4ed0a607c84d55e58c82f98739061a32054b"
 		},
 		{
 			"ImportPath": "github.com/pivotal-cf-experimental/cf-test-helpers/services",
-			"Rev": "9b80e97c6cb94a09fb6a1b04bd28c56fee62717e"
+			"Rev": "980d4ed0a607c84d55e58c82f98739061a32054b"
 		}
 	]
 }

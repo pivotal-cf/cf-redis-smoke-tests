@@ -31,7 +31,7 @@ var _ = Describe("Redis Service", func() {
 	}
 
 	appUri := func(appName string) string {
-		return "https://" + appName + "." + testConfig.AppsDomain
+		return "https://" + appName + "." + testConfig.SystemDomain
 	}
 
 	assertAppIsRunning := func(appName string) {
