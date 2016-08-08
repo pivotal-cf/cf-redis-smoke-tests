@@ -9,6 +9,7 @@ import (
 
 type Config struct {
 	AppsDomain                    string  `json:"apps_domain"`
+	SystemDomain                  string  `json:"system_domain"`
 	ApiEndpoint                   string  `json:"api"`
 	AdminUser                     string  `json:"admin_user"`
 	AdminPassword                 string  `json:"admin_password"`
@@ -55,11 +56,15 @@ func ValidateConfig(config *Config) error {
 	if config.TimeoutScale == 0 {
 		config.TimeoutScale = 1
 	} else if config.TimeoutScale < 0 {
-		return fmt.Errorf("Field 'timeout_scale' must not be negative (found %d)", config.TimeoutScale)
+		return fmt.Errorf("Field 'timeout_scale' must not be negative (found %f)", config.TimeoutScale)
 	}
 
 	if config.SpaceName != "" && config.OrgName == "" {
 		return fmt.Errorf("Field 'space_name' cannot be set unless 'org_name' is also set")
+	}
+
+	if config.SystemDomain == "" {
+		return fmt.Errorf("Field 'system_domain' must not be empty")
 	}
 
 	return nil
