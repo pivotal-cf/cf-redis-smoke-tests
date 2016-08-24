@@ -144,7 +144,7 @@ var _ = Describe("Redis Service", func() {
 	})
 
 	AfterEach(func() {
-		Eventually(cf.Cf("delete", appName, "-f"), shortTimeout).Should(
+		Eventually(cf.Cf("delete", appName, "-f", "-r"), shortTimeout).Should(
 			Exit(0),
 			"{\"FailReason\": \"Failed to `cf delete` test app\"}",
 		)
