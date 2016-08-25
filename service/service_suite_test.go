@@ -37,6 +37,7 @@ func loadConfig() (testConfig redisTestConfig) {
 var testConfig services.Config
 var securityGroupConfigPath string
 var redisConfig = loadConfig()
+var smokeTestReporter *reporter.SmokeTestReport
 
 func TestService(t *testing.T) {
 	services.LoadConfig(os.Getenv("CONFIG_PATH"), &testConfig)
@@ -49,8 +50,10 @@ func TestService(t *testing.T) {
 
 	testConfig.TimeoutScale = 3
 
+	smokeTestReporter = new(reporter.SmokeTestReport)
+
 	reporter := []Reporter{
-		Reporter(new(reporter.SmokeTestReport)),
+		Reporter(smokeTestReporter),
 	}
 
 	RegisterFailHandler(Fail)

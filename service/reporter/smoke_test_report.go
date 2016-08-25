@@ -9,14 +9,53 @@ import (
 	"github.com/onsi/ginkgo/types"
 )
 
+type Step struct {
+	Description string
+	Result      string
+	Task        func()
+}
+
+func (step *Step) Perform() {
+	step.Result = "FAILED"
+	step.Task()
+	step.Result = "PASSED"
+}
+
+func NewStep(description string, task func()) *Step {
+	return &Step{
+		Description: description,
+		Result:      "DIDN'T RUN",
+		Task:        task,
+	}
+}
+
 type failure struct {
 	title   string
 	message string
 }
 
 type SmokeTestReport struct {
-	testCount int
-	failures  []failure
+	testCount        int
+	failures         []failure
+	beforeSuitesteps []*Step
+	afterSuiteSteps  []*Step
+	specSteps        []*Step
+}
+
+func (report *SmokeTestReport) RegisterBeforeSuiteSteps(steps []*Step) {
+	report.beforeSuitesteps = append(report.beforeSuitesteps, steps...)
+}
+
+func (report *SmokeTestReport) RegisterAfterSuiteSteps(steps []*Step) {
+	report.afterSuiteSteps = append(report.afterSuiteSteps, steps...)
+}
+
+func (report *SmokeTestReport) RegisterSpecSteps(steps []*Step) {
+	report.specSteps = append(report.specSteps, steps...)
+}
+
+func (report *SmokeTestReport) ClearSpecSteps() {
+	report.specSteps = []*Step{}
 }
 
 func (report *SmokeTestReport) SpecSuiteWillBegin(
@@ -37,6 +76,13 @@ func (report *SmokeTestReport) BeforeSuiteDidRun(summary *types.SetupSummary) {
 		})
 	}
 	report.printMessageTitle("Finished test suite setup")
+
+	fmt.Println("Smoke Test Suite Setup Results:")
+	count := len(report.beforeSuitesteps)
+	for i, step := range report.beforeSuitesteps {
+		fmt.Printf("[%d/%d] %s: %s\n", i+1, count, step.Description, step.Result)
+	}
+	fmt.Println()
 }
 
 func (report *SmokeTestReport) SpecWillRun(summary *types.SpecSummary) {
@@ -57,10 +103,24 @@ func (report *SmokeTestReport) SpecDidComplete(summary *types.SpecSummary) {
 	title := report.getTitleFromComponents(summary)
 	message := fmt.Sprintf("END %d. %s", report.testCount, title)
 	report.printMessageTitle(message)
+
+	fmt.Println("Smoke Test plan Results:")
+	count := len(report.specSteps)
+	for i, step := range report.specSteps {
+		fmt.Printf("[%d/%d] %s: %s\n", i+1, count, step.Description, step.Result)
+	}
+	fmt.Println()
 }
 
 func (report *SmokeTestReport) AfterSuiteDidRun(summary *types.SetupSummary) {
 	report.printMessageTitle("Finished suite teardown")
+
+	fmt.Println("Smoke Test Suite Teardown Results:")
+	count := len(report.afterSuiteSteps)
+	for i, step := range report.afterSuiteSteps {
+		fmt.Printf("[%d/%d] %s: %s\n", i+1, count, step.Description, step.Result)
+	}
+	fmt.Println()
 }
 
 func (report *SmokeTestReport) SpecSuiteDidEnd(summary *types.SuiteSummary) {
