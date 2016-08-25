@@ -53,7 +53,7 @@ func TestService(t *testing.T) {
 	smokeTestReporter = new(reporter.SmokeTestReport)
 
 	reporter := []Reporter{
-		Reporter(new(reporter.SmokeTestReport)),
+		Reporter(smokeTestReporter),
 	}
 
 	RegisterFailHandler(Fail)

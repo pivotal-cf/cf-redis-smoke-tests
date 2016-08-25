@@ -173,7 +173,7 @@ func (cf *CF) Push(appName string, args ...string) func() {
 //Delete is equivalent to `cf delete {appName} -f`
 func (cf *CF) Delete(appName string) func() {
 	return func() {
-		Eventually(helpersCF.Cf("delete", appName), cf.ShortTimeout).Should(
+		Eventually(helpersCF.Cf("delete", appName, "-f", "-r"), cf.ShortTimeout).Should(
 			gexec.Exit(0),
 			"{\"FailReason\": \"Failed to `cf delete` test app\"}",
 		)
