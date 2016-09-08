@@ -34,10 +34,12 @@ func loadConfig() (testConfig redisTestConfig) {
 	return testConfig
 }
 
-var testConfig services.Config
-var securityGroupConfigPath string
-var redisConfig = loadConfig()
-var smokeTestReporter *reporter.SmokeTestReport
+var (
+	testConfig              services.Config
+	securityGroupConfigPath string
+	redisConfig             = loadConfig()
+	smokeTestReporter       *reporter.SmokeTestReport
+)
 
 func TestService(t *testing.T) {
 	services.LoadConfig(os.Getenv("CONFIG_PATH"), &testConfig)

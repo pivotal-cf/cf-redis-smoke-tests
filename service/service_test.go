@@ -16,17 +16,16 @@ import (
 )
 
 var _ = Describe("Redis Service", func() {
-	var shortTimeout = time.Minute * 3
-	var longTimeout = time.Minute * 15
-	var retryInterval = time.Second * 1
-	var appPath = "../assets/cf-redis-example-app"
-
-	var appName string
-	var context services.Context
-
-	randomName := func() string {
-		return uuid.NewRandom().String()
-	}
+	var (
+		shortTimeout        = time.Minute * 3
+		longTimeout         = time.Minute * 15
+		retryInterval       = time.Second * 1
+		appPath             = "../assets/cf-redis-example-app"
+		serviceInstanceName string
+		appName             string
+		planName            string
+		context             services.Context
+	)
 
 	BeforeSuite(func() {
 		context = services.NewContext(testConfig, "redis-test")
@@ -120,6 +119,7 @@ var _ = Describe("Redis Service", func() {
 		testCF := smokeTestCF.CF{ShortTimeout: shortTimeout}
 		regularContext := context.RegularUserContext()
 		appName = randomName()
+		serviceInstanceName = randomName()
 
 		pushArgs := []string{
 			"-m", "256M",
@@ -155,6 +155,14 @@ var _ = Describe("Redis Service", func() {
 		testCF := smokeTestCF.CF{ShortTimeout: shortTimeout}
 
 		specSteps := []*reporter.Step{
+			reporter.NewStep(
+				fmt.Sprintf("Unbind the %q plan instance", planName),
+				testCF.UnbindService(appName, serviceInstanceName),
+			),
+			reporter.NewStep(
+				fmt.Sprintf("Delete the %q plan instance", planName),
+				testCF.DeleteService(serviceInstanceName),
+			),
 			reporter.NewStep(
 				"Delete the app",
 				testCF.Delete(appName),
@@ -209,7 +217,6 @@ var _ = Describe("Redis Service", func() {
 
 	AssertLifeCycleBehavior := func(planName string) {
 		It(strings.ToUpper(planName)+": create, bind to, write to, read from, unbind, and destroy a service instance", func() {
-			serviceInstanceName := randomName()
 			testCF := smokeTestCF.CF{
 				ShortTimeout: shortTimeout,
 				LongTimeout:  longTimeout,
@@ -248,14 +255,6 @@ var _ = Describe("Redis Service", func() {
 					"Read the key/value pair back",
 					app.ReadAssert("mykey", "myvalue"),
 				),
-				reporter.NewStep(
-					fmt.Sprintf("Unbind the %s plan instance", planName),
-					testCF.UnbindService(appName, serviceInstanceName),
-				),
-				reporter.NewStep(
-					fmt.Sprintf("Delete the %s plan instance", planName),
-					testCF.DeleteService(serviceInstanceName),
-				),
 			}
 
 			smokeTestReporter.RegisterSpecSteps(specSteps)
@@ -274,8 +273,12 @@ var _ = Describe("Redis Service", func() {
 	}
 
 	Context("for each plan", func() {
-		for _, planName := range redisConfig.PlanNames {
+		for _, planName = range redisConfig.PlanNames {
 			AssertLifeCycleBehavior(planName)
 		}
 	})
 })
+
+func randomName() string {
+	return uuid.NewRandom().String()
+}
