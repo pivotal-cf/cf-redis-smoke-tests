@@ -65,8 +65,13 @@ func (cf *CF) CreateOrg(org, quota string) func() {
 }
 
 //EnableServiceAccess is equivalent to `cf enable-service-access -o {org} {service-offering}`
+//In order to run enable-service-access idempotently we disable-service-access before.
 func (cf *CF) EnableServiceAccess(org, service string) func() {
 	return func() {
+		Eventually(helpersCF.Cf("disable-service-access", "-o", org, service), cf.ShortTimeout).Should(
+			gexec.Exit(0),
+			`{"FailReason": "Failed to disable service access for CF test org"}`,
+		)
 		Eventually(helpersCF.Cf("enable-service-access", "-o", org, service), cf.ShortTimeout).Should(
 			gexec.Exit(0),
 			`{"FailReason": "Failed to enable service access for CF test org"}`,
