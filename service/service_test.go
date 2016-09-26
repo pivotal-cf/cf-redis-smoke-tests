@@ -59,6 +59,10 @@ var _ = Describe("Redis Service", func() {
 				testCF.CreateOrg(testConfig.OrgName, "redis-smoke-test-quota"),
 			),
 			reporter.NewStep(
+				fmt.Sprintf("Enable service access for '%s' org", testConfig.OrgName),
+				testCF.EnableServiceAccess(testConfig.OrgName, redisConfig.ServiceName),
+			),
+			reporter.NewStep(
 				fmt.Sprintf("Target '%s' org", testConfig.OrgName),
 				testCF.TargetOrg(testConfig.OrgName),
 			),
