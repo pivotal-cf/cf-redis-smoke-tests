@@ -8,6 +8,7 @@ import (
 	"github.com/onsi/gomega/gbytes"
 	"github.com/onsi/gomega/gexec"
 	helpersCF "github.com/pivotal-cf-experimental/cf-test-helpers/cf"
+	"github.com/pivotal-cf/on-demand-service-broker/system_tests/cf_helpers"
 )
 
 //CF is a testing wrapper around the cf cli
@@ -217,6 +218,7 @@ func (cf *CF) CreateService(serviceName, planName, instanceName string, skip *bo
 				gexec.Exit(0),
 				`{"FailReason": "Failed to create Redis service instance"}`,
 			)
+			cf_helpers.AwaitServiceCreation(serviceName)
 		}
 	}
 }
