@@ -218,7 +218,7 @@ func (cf *CF) CreateService(serviceName, planName, instanceName string, skip *bo
 				gexec.Exit(0),
 				`{"FailReason": "Failed to create Redis service instance"}`,
 			)
-			cf_helpers.AwaitServiceCreation(serviceName)
+			cf_helpers.AwaitServiceCreation(instanceName)
 		}
 	}
 }
