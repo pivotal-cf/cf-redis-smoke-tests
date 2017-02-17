@@ -1,0 +1,144 @@
+{
+	"version": 0,
+	"dependencies": [
+		{
+			"importpath": "github.com/cloudfoundry-incubator/cf-test-helpers/cf",
+			"repository": "https://github.com/cloudfoundry-incubator/cf-test-helpers",
+			"vcs": "git",
+			"revision": "2e4abcefe5452011fd3a56e50e9e1c6ebec5e190",
+			"branch": "master",
+			"path": "/cf",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/cloudfoundry-incubator/cf-test-helpers/commandreporter",
+			"repository": "https://github.com/cloudfoundry-incubator/cf-test-helpers",
+			"vcs": "git",
+			"revision": "2e4abcefe5452011fd3a56e50e9e1c6ebec5e190",
+			"branch": "master",
+			"path": "commandreporter",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/cloudfoundry-incubator/cf-test-helpers/commandstarter",
+			"repository": "https://github.com/cloudfoundry-incubator/cf-test-helpers",
+			"vcs": "git",
+			"revision": "2e4abcefe5452011fd3a56e50e9e1c6ebec5e190",
+			"branch": "master",
+			"path": "commandstarter",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/cloudfoundry-incubator/cf-test-helpers/internal",
+			"repository": "https://github.com/cloudfoundry-incubator/cf-test-helpers",
+			"vcs": "git",
+			"revision": "2e4abcefe5452011fd3a56e50e9e1c6ebec5e190",
+			"branch": "master",
+			"path": "internal",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/craigfurman/herottp",
+			"repository": "https://github.com/craigfurman/herottp",
+			"vcs": "git",
+			"revision": "5c89a599c8659573e7be01fa87f2a8150fd649b7",
+			"branch": "master",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/golang/protobuf/proto",
+			"repository": "https://github.com/golang/protobuf",
+			"vcs": "git",
+			"revision": "8ee79997227bf9b34611aee7946ae64735e6fd93",
+			"branch": "master",
+			"path": "/proto",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/golang/protobuf/ptypes/any",
+			"repository": "https://github.com/golang/protobuf",
+			"vcs": "git",
+			"revision": "8ee79997227bf9b34611aee7946ae64735e6fd93",
+			"branch": "master",
+			"path": "ptypes/any",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/onsi/ginkgo",
+			"repository": "https://github.com/onsi/ginkgo",
+			"vcs": "git",
+			"revision": "bb93381d543b0e5725244abe752214a110791d01",
+			"branch": "master",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/onsi/gomega",
+			"repository": "https://github.com/onsi/gomega",
+			"vcs": "git",
+			"revision": "c463cd2a8578290d4be7a25cba69de81cf35785e",
+			"branch": "master",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/pborman/uuid",
+			"repository": "https://github.com/pborman/uuid",
+			"vcs": "git",
+			"revision": "1b00554d822231195d1babd97ff4a781231955c9",
+			"branch": "master",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/pivotal-cf-experimental/cf-test-helpers/cf",
+			"repository": "https://github.com/pivotal-cf-experimental/cf-test-helpers",
+			"vcs": "git",
+			"revision": "980d4ed0a607c84d55e58c82f98739061a32054b",
+			"branch": "master",
+			"path": "cf",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/pivotal-cf-experimental/cf-test-helpers/runner",
+			"repository": "https://github.com/pivotal-cf-experimental/cf-test-helpers",
+			"vcs": "git",
+			"revision": "980d4ed0a607c84d55e58c82f98739061a32054b",
+			"branch": "master",
+			"path": "runner",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/pivotal-cf-experimental/cf-test-helpers/services",
+			"repository": "https://github.com/pivotal-cf-experimental/cf-test-helpers",
+			"vcs": "git",
+			"revision": "980d4ed0a607c84d55e58c82f98739061a32054b",
+			"branch": "master",
+			"path": "/services",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/pivotal-cf/on-demand-service-broker/system_tests/cf_helpers",
+			"repository": "https://github.com/pivotal-cf/on-demand-service-broker",
+			"vcs": "git",
+			"revision": "f6b4192865ac7f7ef720136b20d5332fbfca3160",
+			"branch": "master",
+			"path": "/system_tests/cf_helpers",
+			"notests": true
+		},
+		{
+			"importpath": "golang.org/x/sys/unix",
+			"repository": "https://go.googlesource.com/sys",
+			"vcs": "git",
+			"revision": "075e574b89e4c2d22f2286a7e2b919519c6f3547",
+			"branch": "master",
+			"path": "/unix",
+			"notests": true
+		},
+		{
+			"importpath": "gopkg.in/yaml.v2",
+			"repository": "https://gopkg.in/yaml.v2",
+			"vcs": "git",
+			"revision": "a3f3340b5840cee44f372bddb5880fcbc419b46a",
+			"branch": "v2",
+			"notests": true
+		}
+	]
+}
