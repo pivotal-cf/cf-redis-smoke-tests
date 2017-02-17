@@ -263,6 +263,16 @@ func (cf *CF) Start(appName string) func() {
 	}
 }
 
+//SetEnv is equivalent to `cf set-env {appName} {envVarName} {instanceName}`
+func (cf *CF) SetEnv(appName, environmentVariable, instanceName string) func() {
+	return func() {
+		Eventually(helpersCF.Cf("set-env", appName, environmentVariable, instanceName), cf.ShortTimeout).Should(
+			gexec.Exit(0),
+			`{"FailReason": "Failed to set environment variable for test app"}`,
+		)
+	}
+}
+
 //Logout is equivalent to `cf logout`
 func (cf *CF) Logout() func() {
 	return func() {

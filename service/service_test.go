@@ -244,6 +244,10 @@ var _ = Describe("Redis Service", func() {
 					testCF.BindService(appName, serviceInstanceName),
 				),
 				reporter.NewStep(
+					"Set the service name of the bound instance as an environment variable for the app",
+					testCF.SetEnv(appName, "service_name", serviceInstanceName),
+				),
+				reporter.NewStep(
 					"Start the app",
 					testCF.Start(appName),
 				),
