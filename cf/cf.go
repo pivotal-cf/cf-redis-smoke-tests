@@ -1,7 +1,12 @@
 package cf
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"os"
+	"strings"
 	"time"
 
 	. "github.com/onsi/gomega"
@@ -111,11 +116,36 @@ func (cf *CF) CreateSpace(space string) func() {
 }
 
 //CreateSecurityGroup is equivalent to `cf create-security-group {securityGroup} {configPath}`
-func (cf *CF) CreateSecurityGroup(securityGroup, configPath string) func() {
+func (cf *CF) CreateAndBindSecurityGroup(securityGroup, appName, org, space string) func() {
 	return func() {
-		Eventually(helpersCF.Cf("create-security-group", securityGroup, configPath), cf.ShortTimeout).Should(
+		appGuid := cf.getAppGuid(appName)
+
+		host, port := cf.getBindingCredentials(appGuid)
+
+		sgFile, err := ioutil.TempFile("", "smoke-test-security-group-")
+		Expect(err).NotTo(HaveOccurred())
+		defer sgFile.Close()
+		defer os.Remove(sgFile.Name())
+
+		sgs := []struct {
+			Protocol    string `json:"protocol"`
+			Destination string `json:"destination"`
+			Ports       string `json:"ports"`
+		}{
+			{"tcp", host, port},
+		}
+
+		err = json.NewEncoder(sgFile).Encode(sgs)
+		Expect(err).NotTo(HaveOccurred(), `{"FailReason": "Failed to encode security groups"}`)
+
+		Eventually(helpersCF.Cf("create-security-group", securityGroup, sgFile.Name()), cf.ShortTimeout).Should(
 			gexec.Exit(0),
 			`{"FailReason": "Failed to create security group"}`,
+		)
+
+		Eventually(helpersCF.Cf("bind-security-group", securityGroup, org, space), cf.ShortTimeout).Should(
+			gexec.Exit(0),
+			`{"FailReason": "Failed to bind security group to space"}`,
 		)
 	}
 }
@@ -126,16 +156,6 @@ func (cf *CF) DeleteSecurityGroup(securityGroup string) func() {
 		Eventually(helpersCF.Cf("delete-security-group", securityGroup, "-f"), cf.ShortTimeout).Should(
 			gexec.Exit(0),
 			`{"FailReason": "Failed to delete security group"}`,
-		)
-	}
-}
-
-//BindSecurityGroup is equivalent to `cf bind-security-group {securityGroup} {org} {space}`
-func (cf *CF) BindSecurityGroup(securityGroup, org, space string) func() {
-	return func() {
-		Eventually(helpersCF.Cf("bind-security-group", securityGroup, org, space), cf.ShortTimeout).Should(
-			gexec.Exit(0),
-			`{"FailReason": "Failed to bind security group to space"}`,
 		)
 	}
 }
@@ -281,4 +301,36 @@ func (cf *CF) Logout() func() {
 			`{"FailReason": "Failed to logout"}`,
 		)
 	}
+}
+
+func (cf *CF) getAppGuid(appName string) string {
+	session := helpersCF.Cf("app", "--guid", appName)
+	Eventually(session, cf.ShortTimeout).Should(gexec.Exit(0), `{"FailReason": "Failed to retrieve GUID for app"}`)
+
+	return strings.Trim(string(session.Out.Contents()), " \n")
+}
+
+func (cf *CF) getBindingCredentials(appGuid string) (string, string) {
+	session := helpersCF.Cf("curl", fmt.Sprintf("/v2/apps/%s/service_bindings", appGuid))
+	Eventually(session, cf.ShortTimeout).Should(gexec.Exit(0), `{"FailReason": "Failed to retrieve service bindings for app"}`)
+
+	var resp = new(struct {
+		Resources []struct {
+			Entity struct {
+				Credentials struct {
+					Host string
+					Port string
+				}
+			}
+		}
+	})
+
+	err := json.NewDecoder(bytes.NewBuffer(session.Out.Contents())).Decode(resp)
+	Expect(err).NotTo(HaveOccurred(), `{"FailReason": "Failed to decode service binding response"}`)
+	Expect(resp.Resources).To(HaveLen(1), `{"FailReason": "Invalid binding response, expected exactly one binding"}`)
+
+	host, port := resp.Resources[0].Entity.Credentials.Host, resp.Resources[0].Entity.Credentials.Port
+	Expect(host).NotTo(BeEmpty(), `{"FailReason": "Invalid binding, missing host"}`)
+	Expect(port).NotTo(BeEmpty(), `{"FailReason": "Invalid binding, missing port"}`)
+	return host, port
 }

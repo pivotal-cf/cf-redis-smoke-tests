@@ -99,14 +99,6 @@ var _ = Describe("Redis Service", func() {
 				testCF.SetSpaceRole(regularContext.Username, regularContext.Org, testConfig.SpaceName, "SpaceAuditor"),
 			),
 			reporter.NewStep(
-				"Create security group for running smoke tests",
-				testCF.CreateSecurityGroup("redis-smoke-tests-sg", securityGroupConfigPath),
-			),
-			reporter.NewStep(
-				fmt.Sprintf("Bind security group for running smoke tests to '%s'", testConfig.SpaceName),
-				testCF.BindSecurityGroup("redis-smoke-tests-sg", testConfig.OrgName, testConfig.SpaceName),
-			),
-			reporter.NewStep(
 				"Log out",
 				testCF.Logout(),
 			),
@@ -120,7 +112,11 @@ var _ = Describe("Redis Service", func() {
 	})
 
 	BeforeEach(func() {
-		testCF := smokeTestCF.CF{ShortTimeout: shortTimeout}
+		testCF := smokeTestCF.CF{
+			ShortTimeout: shortTimeout,
+			LongTimeout:  longTimeout,
+		}
+
 		regularContext := context.RegularUserContext()
 		appName = randomName()
 		serviceInstanceName = randomName()
@@ -175,6 +171,18 @@ var _ = Describe("Redis Service", func() {
 				"Log out",
 				testCF.Logout(),
 			),
+			reporter.NewStep(
+				"Log in as admin",
+				testCF.Auth(testConfig.AdminUser, testConfig.AdminPassword),
+			),
+			reporter.NewStep(
+				"Delete security group 'redis-smoke-tests-sg'",
+				testCF.DeleteSecurityGroup("redis-smoke-tests-sg"),
+			),
+			reporter.NewStep(
+				"Log out",
+				testCF.Logout(),
+			),
 		}
 
 		smokeTestReporter.RegisterSpecSteps(specSteps)
@@ -203,10 +211,6 @@ var _ = Describe("Redis Service", func() {
 				testCF.DeleteUser(regularContext.Username),
 			),
 			reporter.NewStep(
-				"Delete security group 'redis-smoke-tests-sg'",
-				testCF.DeleteSecurityGroup("redis-smoke-tests-sg"),
-			),
-			reporter.NewStep(
 				"Log out",
 				testCF.Logout(),
 			),
@@ -226,6 +230,8 @@ var _ = Describe("Redis Service", func() {
 				LongTimeout:  longTimeout,
 			}
 
+			regularContext := context.RegularUserContext()
+
 			var skip bool
 
 			uri := fmt.Sprintf("https://%s.%s", appName, testConfig.AppsDomain)
@@ -242,6 +248,26 @@ var _ = Describe("Redis Service", func() {
 				reporter.NewStep(
 					"Bind the redis sample app to the shared vm plan instance of Redis",
 					testCF.BindService(appName, serviceInstanceName),
+				),
+				reporter.NewStep(
+					"Log in as admin",
+					testCF.Auth(testConfig.AdminUser, testConfig.AdminPassword),
+				),
+				reporter.NewStep(
+					fmt.Sprintf("Target '%s' org and '%s' space", testConfig.OrgName, testConfig.SpaceName),
+					testCF.TargetOrgAndSpace(testConfig.OrgName, testConfig.SpaceName),
+				),
+				reporter.NewStep(
+					"Create and bind security group for running smoke tests",
+					testCF.CreateAndBindSecurityGroup("redis-smoke-tests-sg", appName, testConfig.OrgName, testConfig.SpaceName),
+				),
+				reporter.NewStep(
+					fmt.Sprintf("Log in as %s", regularContext.Username),
+					testCF.Auth(regularContext.Username, regularContext.Password),
+				),
+				reporter.NewStep(
+					fmt.Sprintf("Target '%s' org and '%s' space", testConfig.OrgName, testConfig.SpaceName),
+					testCF.TargetOrgAndSpace(testConfig.OrgName, testConfig.SpaceName),
 				),
 				reporter.NewStep(
 					"Set the service name of the bound instance as an environment variable for the app",
