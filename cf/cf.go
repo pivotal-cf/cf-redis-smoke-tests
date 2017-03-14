@@ -132,7 +132,7 @@ func (cf *CF) CreateAndBindSecurityGroup(securityGroup, appName, org, space stri
 			Destination string `json:"destination"`
 			Ports       string `json:"ports"`
 		}{
-			{"tcp", host, port},
+			{"tcp", host, fmt.Sprintf("%d", port)},
 		}
 
 		err = json.NewEncoder(sgFile).Encode(sgs)
@@ -310,7 +310,7 @@ func (cf *CF) getAppGuid(appName string) string {
 	return strings.Trim(string(session.Out.Contents()), " \n")
 }
 
-func (cf *CF) getBindingCredentials(appGuid string) (string, string) {
+func (cf *CF) getBindingCredentials(appGuid string) (string, int) {
 	session := helpersCF.Cf("curl", fmt.Sprintf("/v2/apps/%s/service_bindings", appGuid))
 	Eventually(session, cf.ShortTimeout).Should(gexec.Exit(0), `{"FailReason": "Failed to retrieve service bindings for app"}`)
 
@@ -319,7 +319,7 @@ func (cf *CF) getBindingCredentials(appGuid string) (string, string) {
 			Entity struct {
 				Credentials struct {
 					Host string
-					Port string
+					Port int
 				}
 			}
 		}
@@ -331,6 +331,6 @@ func (cf *CF) getBindingCredentials(appGuid string) (string, string) {
 
 	host, port := resp.Resources[0].Entity.Credentials.Host, resp.Resources[0].Entity.Credentials.Port
 	Expect(host).NotTo(BeEmpty(), `{"FailReason": "Invalid binding, missing host"}`)
-	Expect(port).NotTo(BeEmpty(), `{"FailReason": "Invalid binding, missing port"}`)
+	Expect(port).NotTo(BeZero(), `{"FailReason": "Invalid binding, missing port"}`)
 	return host, port
 }
