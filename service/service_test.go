@@ -246,7 +246,7 @@ var _ = Describe("Redis Service", func() {
 
 			specSteps := []*reporter.Step{
 				reporter.NewStep(
-					"Bind the redis sample app to the shared vm plan instance of Redis",
+					fmt.Sprintf("Bind the redis sample app to the '%s' plan instance of Redis", planName),
 					testCF.BindService(appName, serviceInstanceName),
 				),
 				reporter.NewStep(
