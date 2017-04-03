@@ -1,0 +1,28 @@
+{
+    "service_name": "p.redis",
+    "plan_names": [
+        "cache-medium",
+        "cache-large"
+    ],
+    "apps_domain": "bosh-lite.com",
+    "system_domain": "bosh-lite.com",
+    "api": "api.bosh-lite.com",
+    "admin_user": "admin",
+    "admin_password": "admin",
+    "space_name": "redis-smoke-test-space",
+    "org_name": "redis-smoke-test-org",
+    "skip_ssl_validation": true,
+    "test_password": "6S5CURVjP7.5.05Ip61YxZph.65Tuv4.rCsXYP7A0.G1..tT8fhhhhhhcf......",
+    "create_permissive_security_group": false,
+    "security_groups": [{
+            "protocol": "tcp",
+            "destination": "10.0.0.0-10.255.255.255",
+            "ports": "6379"
+        },
+        {
+            "protocol": "tcp",
+            "destination": "10.0.0.0-10.255.255.255",
+            "ports": "32768-61000"
+        }
+    ]
+}

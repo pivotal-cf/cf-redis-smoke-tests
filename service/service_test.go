@@ -161,7 +161,7 @@ var _ = Describe("Redis Service", func() {
 			),
 			reporter.NewStep(
 				fmt.Sprintf("Delete the %q plan instance", planName),
-				testCF.DeleteService(serviceInstanceName),
+				testCF.EnsureDeleteService(serviceInstanceName),
 			),
 			reporter.NewStep(
 				"Delete the app",
@@ -206,6 +206,11 @@ var _ = Describe("Redis Service", func() {
 				"Log in as admin",
 				testCF.Auth(testConfig.AdminUser, testConfig.AdminPassword),
 			),
+			reporter.NewStep(
+				fmt.Sprintf("Target '%s' org and '%s' space", testConfig.OrgName, testConfig.SpaceName),
+				testCF.TargetOrgAndSpace(testConfig.OrgName, testConfig.SpaceName),
+			),
+			reporter.NewStep("Ensure no service-instances left", testCF.EnsureNoServices()),
 			reporter.NewStep(
 				fmt.Sprintf("Delete user '%s'", regularContext.Username),
 				testCF.DeleteUser(regularContext.Username),

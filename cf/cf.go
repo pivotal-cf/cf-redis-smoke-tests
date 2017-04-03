@@ -253,6 +253,32 @@ func (cf *CF) DeleteService(instanceName string) func() {
 	}
 }
 
+//EnsureDeleteService is equivalent to `cf delete-service {instanceName} -f`
+func (cf *CF) EnsureDeleteService(instanceName string) func() {
+	return func() {
+		// fmt.Println("STOP NGINX NOW") // DO NOT COMMIT ME
+		// time.Sleep(20 * time.Second)  // DO NOT COMMIT ME
+		for retry := 0; retry < 20; retry++ {
+			session := helpersCF.Cf("delete-service", "-f", instanceName)
+			Eventually(session).Should(gexec.Exit())
+			if session.ExitCode() == 0 {
+				Eventually(helpersCF.Cf("service", instanceName), cf.LongTimeout).Should(gbytes.Say(fmt.Sprintf("Service instance %s not found", instanceName)))
+				fmt.Println("Successfully deleted service instance ", instanceName) // DO NOT COMMIT ME
+				return
+			}
+			fmt.Printf("Failed to delete service instance %s this time, will try again\n", instanceName) // DO NOT COMMIT ME
+			time.Sleep(1 * time.Second)
+		}
+		panic(fmt.Sprintf("Failed to delete service instance %s.", instanceName))
+	}
+}
+
+func (cf *CF) EnsureNoServices() func() {
+	return func() {
+		Eventually(helpersCF.Cf("services"), cf.LongTimeout).Should(gbytes.Say("No services found"))
+	}
+}
+
 //BindService is equivalent to `cf bind-service {appName} {instanceName}`
 func (cf *CF) BindService(appName, instanceName string) func() {
 	return func() {
