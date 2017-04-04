@@ -8,6 +8,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gexec"
+
 	"github.com/pivotal-cf/cf-redis-smoke-tests/retry"
 )
 
@@ -25,100 +26,102 @@ func FailingSession() *gexec.Session {
 	return s
 }
 
-var _ = Describe("retry.Session.Until", func() {
-	Context("when the session succeeds immediatly", func() {
-		var (
-			retries = 0
+var _ = Describe("retry", func() {
+	Describe("Until", func() {
+		Context("when the session succeeds immediatly", func() {
+			var (
+				attempts = 0
 
-			fn = func() *gexec.Session {
-				retries += 1
-				return SucceedingSession()
-			}
-		)
+				fn = func() *gexec.Session {
+					attempts += 1
+					return SucceedingSession()
+				}
+			)
 
-		It("succeeds without retrying", func() {
-			retry.Session(fn).WithMaxRetries(3).AndBackoff(retry.None(10 * time.Millisecond)).Until(retry.Succeeds)
+			It("succeeds without retrying", func() {
+				retry.Session(fn).WithMaxRetries(3).AndBackoff(retry.None(10 * time.Millisecond)).Until(retry.Succeeds)
 
-			Expect(retries).To(Equal(1))
-		})
-	})
-
-	Context("when the session always fails", func() {
-		var (
-			attempts int
-			failed   bool
-
-			maxRetries = 3
-
-			fn = func() *gexec.Session {
-				attempts += 1
-				return FailingSession()
-			}
-
-			failHandler = func(msg string, i ...int) {
-				failed = true
-			}
-		)
-
-		BeforeEach(func() {
-			attempts = 0
-			failed = false
+				Expect(attempts).To(Equal(1))
+			})
 		})
 
-		It("calls the fail handler", func() {
-			retry.Session(fn).WithMaxRetries(maxRetries).AndBackoff(retry.None(10 * time.Millisecond)).AndFailHandler(failHandler).Until(retry.Succeeds)
-			Expect(failed).To(BeTrue())
-		})
+		Context("when the session always fails", func() {
+			var (
+				attempts int
+				failed   bool
 
-		It("tries up to maxRetries", func() {
-			retry.Session(fn).WithMaxRetries(maxRetries).AndBackoff(retry.None(10 * time.Millisecond)).AndFailHandler(failHandler).Until(retry.Succeeds)
-			Expect(attempts).To(Equal(maxRetries + 1))
-		})
+				maxRetries = 3
 
-		It("calls the backoff function", func() {
-			backoffCalls := 0
-
-			backoff := func(count uint) time.Duration {
-				backoffCalls += 1
-				return time.Millisecond
-			}
-
-			retry.Session(fn).WithMaxRetries(maxRetries).AndFailHandler(failHandler).AndBackoff(backoff).Until(retry.Succeeds)
-
-			Expect(backoffCalls).To(Equal(attempts))
-		})
-	})
-
-	Context("when the session eventually succeeds", func() {
-		var (
-			attempts  = 0
-			failCount = 3
-
-			fn = func() *gexec.Session {
-				attempts += 1
-
-				if attempts <= failCount {
+				fn = func() *gexec.Session {
+					attempts += 1
 					return FailingSession()
 				}
 
-				return SucceedingSession()
-			}
-		)
+				failHandler = func(msg string, i ...int) {
+					failed = true
+				}
+			)
 
-		It("retries until it succeeds", func() {
-			retry.Session(fn).WithMaxRetries(failCount * 2).AndBackoff(retry.None(10 * time.Millisecond)).Until(retry.Succeeds)
+			BeforeEach(func() {
+				attempts = 0
+				failed = false
+			})
 
-			Expect(attempts).To(Equal(failCount + 1))
+			It("calls the fail handler", func() {
+				retry.Session(fn).WithMaxRetries(maxRetries).AndBackoff(retry.None(10 * time.Millisecond)).AndFailHandler(failHandler).Until(retry.Succeeds)
+				Expect(failed).To(BeTrue())
+			})
+
+			It("tries up to maxRetries", func() {
+				retry.Session(fn).WithMaxRetries(maxRetries).AndBackoff(retry.None(10 * time.Millisecond)).AndFailHandler(failHandler).Until(retry.Succeeds)
+				Expect(attempts).To(Equal(maxRetries + 1))
+			})
+
+			It("calls the backoff function", func() {
+				backoffCalls := 0
+
+				backoff := func(count uint) time.Duration {
+					backoffCalls += 1
+					return time.Millisecond
+				}
+
+				retry.Session(fn).WithMaxRetries(maxRetries).AndFailHandler(failHandler).AndBackoff(backoff).Until(retry.Succeeds)
+
+				Expect(backoffCalls).To(Equal(attempts))
+			})
+		})
+
+		Context("when the session eventually succeeds", func() {
+			var (
+				attempts  = 0
+				failCount = 3
+
+				fn = func() *gexec.Session {
+					attempts += 1
+
+					if attempts <= failCount {
+						return FailingSession()
+					}
+
+					return SucceedingSession()
+				}
+			)
+
+			It("retries until it succeeds", func() {
+				retry.Session(fn).WithMaxRetries(failCount * 2).AndBackoff(retry.None(10 * time.Millisecond)).Until(retry.Succeeds)
+
+				Expect(attempts).To(Equal(failCount + 1))
+			})
 		})
 	})
 
-	Context("retry.Backoff", func() {
+	Context("Backoff", func() {
 		var baseline = time.Second
 
-		Describe("retry.None", func() {
+		Describe("None", func() {
 			var backoff = retry.None(baseline)
 
-			It("implements a constant backoff", func() {
+			It("implements no backoff", func() {
 				Expect(backoff(0)).To(Equal(time.Duration(0)))
 
 				for i := 1; i < 10; i++ {
@@ -127,20 +130,20 @@ var _ = Describe("retry.Session.Until", func() {
 			})
 		})
 
-		Describe("retry.Linear", func() {
+		Describe("Linear", func() {
 			var backoff = retry.Linear(baseline)
 
-			It("implements a constant backoff", func() {
+			It("implements a linear backoff", func() {
 				for i := 0; i < 10; i++ {
 					Expect(backoff(uint(i))).To(Equal(time.Duration(i) * baseline))
 				}
 			})
 		})
 
-		Describe("retry.Exponential", func() {
+		Describe("Exponential", func() {
 			var backoff = retry.Exponential(baseline)
 
-			It("implements a constant backoff", func() {
+			It("implements a exponential backoff", func() {
 				Expect(backoff(0)).To(Equal(time.Duration(0)))
 
 				for i := 1; i < 10; i++ {
