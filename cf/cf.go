@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"regexp"
 	"strings"
 	"time"
 
@@ -13,6 +14,7 @@ import (
 	"github.com/onsi/gomega/gbytes"
 	"github.com/onsi/gomega/gexec"
 	helpersCF "github.com/pivotal-cf-experimental/cf-test-helpers/cf"
+	"github.com/pivotal-cf/cf-redis-smoke-tests/retry"
 	"github.com/pivotal-cf/on-demand-service-broker/system_tests/cf_helpers"
 )
 
@@ -20,6 +22,8 @@ import (
 type CF struct {
 	ShortTimeout time.Duration
 	LongTimeout  time.Duration
+	MaxRetries   int
+	RetryBackoff retry.Backoff
 }
 
 //API is equivalent to `cf api {endpoint} [--skip-ssl-validation]`
@@ -245,37 +249,49 @@ func (cf *CF) CreateService(serviceName, planName, instanceName string, skip *bo
 
 //DeleteService is equivalent to `cf delete-service {instanceName} -f`
 func (cf *CF) DeleteService(instanceName string) func() {
+	deleteFn := func() *gexec.Session {
+		return helpersCF.Cf("delete-service", "-f", instanceName)
+	}
+
 	return func() {
-		Eventually(helpersCF.Cf("delete-service", "-f", instanceName), cf.ShortTimeout).Should(
-			gexec.Exit(0),
+		retry.Session(deleteFn).WithSessionTimeout(cf.ShortTimeout).AndMaxRetries(cf.MaxRetries).AndBackoff(cf.RetryBackoff).Until(
+			retry.Succeeds,
 			fmt.Sprintf(`{"FailReason": "Failed to delete service %s"}`, instanceName),
 		)
 	}
 }
 
-//EnsureDeleteService is equivalent to `cf delete-service {instanceName} -f`
-func (cf *CF) EnsureDeleteService(instanceName string) func() {
+func (cf *CF) EnsureServiceInstanceGone(instanceName string) func() {
+	serviceFn := func() *gexec.Session {
+		return helpersCF.Cf("service", instanceName)
+	}
+
+	// longer retry backoff due to asynchronous deletes
+	backoff := retry.Exponential(time.Second)
+	maxRetries := 10
+
 	return func() {
-		// fmt.Println("STOP NGINX NOW") // DO NOT COMMIT ME
-		// time.Sleep(20 * time.Second)  // DO NOT COMMIT ME
-		for retry := 0; retry < 20; retry++ {
-			session := helpersCF.Cf("delete-service", "-f", instanceName)
-			Eventually(session).Should(gexec.Exit())
-			if session.ExitCode() == 0 {
-				Eventually(helpersCF.Cf("service", instanceName), cf.LongTimeout).Should(gbytes.Say(fmt.Sprintf("Service instance %s not found", instanceName)))
-				fmt.Println("Successfully deleted service instance ", instanceName) // DO NOT COMMIT ME
-				return
-			}
-			fmt.Printf("Failed to delete service instance %s this time, will try again\n", instanceName) // DO NOT COMMIT ME
-			time.Sleep(1 * time.Second)
-		}
-		panic(fmt.Sprintf("Failed to delete service instance %s.", instanceName))
+		retry.Session(serviceFn).WithSessionTimeout(cf.ShortTimeout).AndMaxRetries(maxRetries).AndBackoff(backoff).Until(
+			retry.MatchesOutput(regexp.MustCompile(fmt.Sprintf("Service instance %s not found", instanceName))),
+			fmt.Sprintf(`{"FailReason": "Failed to make sure service %s does not exist"}`, instanceName),
+		)
 	}
 }
 
-func (cf *CF) EnsureNoServices() func() {
+func (cf *CF) EnsureAllServiceInstancesGone() func() {
+	serviceFn := func() *gexec.Session {
+		return helpersCF.Cf("services")
+	}
+
+	// longer retry backoff due to asynchronous deletes
+	backoff := retry.Exponential(time.Second)
+	maxRetries := 10
+
 	return func() {
-		Eventually(helpersCF.Cf("services"), cf.LongTimeout).Should(gbytes.Say("No services found"))
+		retry.Session(serviceFn).WithSessionTimeout(cf.ShortTimeout).AndMaxRetries(maxRetries).AndBackoff(backoff).Until(
+			retry.MatchesOutput(regexp.MustCompile("No services found")),
+			`{"FailReason": "Failed to make sure no service instances exist"}`,
+		)
 	}
 }
 
