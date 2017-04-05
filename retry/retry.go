@@ -64,7 +64,7 @@ func (rc *retryCheck) AndBackoff(b Backoff) *retryCheck {
 	return rc.WithBackoff(b)
 }
 
-func (rc *retryCheck) Until(c condition, msg ...string) {
+func (rc *retryCheck) Until(c Condition, msg ...string) {
 	if rc.check(c) {
 		return
 	}
@@ -76,7 +76,7 @@ func (rc *retryCheck) Until(c condition, msg ...string) {
 	rc.failHandler(msg[0])
 }
 
-func (rc *retryCheck) check(c condition) bool {
+func (rc *retryCheck) check(c Condition) bool {
 	for retry := 0; retry <= rc.maxRetries; retry++ {
 		time.Sleep(rc.backoff(uint(retry)))
 
@@ -90,27 +90,39 @@ func (rc *retryCheck) check(c condition) bool {
 	return false
 }
 
-type condition func(session *gexec.Session) bool
+type Condition func(session *gexec.Session) bool
 
 func Succeeds(session *gexec.Session) bool {
 	return session.ExitCode() == 0
 }
 
-func MatchesOutput(regex *regexp.Regexp) condition {
+func MatchesOutput(regex *regexp.Regexp) Condition {
 	return func(session *gexec.Session) bool {
 		return regex.Match(session.Out.Contents())
 	}
 }
 
+func MatchesErrorOutput(regex *regexp.Regexp) Condition {
+	return func(session *gexec.Session) bool {
+		return regex.Match(session.Err.Contents())
+	}
+}
+
+func MatchesStdOrErrorOutput(regex *regexp.Regexp) Condition {
+	return func(session *gexec.Session) bool {
+		return regex.Match(session.Out.Contents()) || regex.Match(session.Err.Contents())
+	}
+}
+
 type Backoff func(retryCount uint) time.Duration
 
-func None(timeout time.Duration) Backoff {
+func None(baseline time.Duration) Backoff {
 	return func(retryCount uint) time.Duration {
 		if retryCount == 0 {
 			return 0
 		}
 
-		return timeout
+		return baseline
 	}
 }
 
