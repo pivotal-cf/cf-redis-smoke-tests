@@ -376,9 +376,13 @@ func (cf *CF) EnsureAllServiceInstancesGone() func() {
 
 //BindService is equivalent to `cf bind-service {appName} {instanceName}`
 func (cf *CF) BindService(appName, instanceName string) func() {
+	bindFn := func() *gexec.Session {
+		return helpersCF.Cf("bind-service", appName, instanceName)
+	}
+
 	return func() {
-		Eventually(helpersCF.Cf("bind-service", appName, instanceName), cf.ShortTimeout).Should(
-			gexec.Exit(0),
+		retry.Session(bindFn).WithSessionTimeout(cf.ShortTimeout).AndMaxRetries(cf.MaxRetries).AndBackoff(cf.RetryBackoff).Until(
+			retry.Succeeds,
 			`{"FailReason": "Failed to bind Redis service instance to test app"}`,
 		)
 	}
@@ -400,9 +404,13 @@ func (cf *CF) UnbindService(appName, instanceName string) func() {
 
 //Start is equivalent to `cf start {appName}`
 func (cf *CF) Start(appName string) func() {
+	startFn := func() *gexec.Session {
+		return helpersCF.Cf("start", appName)
+	}
+
 	return func() {
-		Eventually(helpersCF.Cf("start", appName), cf.LongTimeout).Should(
-			gexec.Exit(0),
+		retry.Session(startFn).WithSessionTimeout(cf.ShortTimeout).AndMaxRetries(cf.MaxRetries).AndBackoff(cf.RetryBackoff).Until(
+			retry.Succeeds,
 			`{"FailReason": "Failed to start test app"}`,
 		)
 	}
@@ -410,9 +418,13 @@ func (cf *CF) Start(appName string) func() {
 
 //SetEnv is equivalent to `cf set-env {appName} {envVarName} {instanceName}`
 func (cf *CF) SetEnv(appName, environmentVariable, instanceName string) func() {
+	setEnvFn := func() *gexec.Session {
+		return helpersCF.Cf("set-env", appName, environmentVariable, instanceName)
+	}
+
 	return func() {
-		Eventually(helpersCF.Cf("set-env", appName, environmentVariable, instanceName), cf.ShortTimeout).Should(
-			gexec.Exit(0),
+		retry.Session(setEnvFn).WithSessionTimeout(cf.ShortTimeout).AndMaxRetries(cf.MaxRetries).AndBackoff(cf.RetryBackoff).Until(
+			retry.Succeeds,
 			`{"FailReason": "Failed to set environment variable for test app"}`,
 		)
 	}
