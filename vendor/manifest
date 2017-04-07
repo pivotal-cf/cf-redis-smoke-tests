@@ -115,15 +115,6 @@
 			"notests": true
 		},
 		{
-			"importpath": "github.com/pivotal-cf/on-demand-service-broker/system_tests/cf_helpers",
-			"repository": "https://github.com/pivotal-cf/on-demand-service-broker",
-			"vcs": "git",
-			"revision": "f6b4192865ac7f7ef720136b20d5332fbfca3160",
-			"branch": "master",
-			"path": "/system_tests/cf_helpers",
-			"notests": true
-		},
-		{
 			"importpath": "golang.org/x/sys/unix",
 			"repository": "https://go.googlesource.com/sys",
 			"vcs": "git",
