@@ -14,7 +14,6 @@ import (
 	"github.com/onsi/gomega/gexec"
 	helpersCF "github.com/pivotal-cf-experimental/cf-test-helpers/cf"
 	"github.com/pivotal-cf/cf-redis-smoke-tests/retry"
-	"github.com/pivotal-cf/on-demand-service-broker/system_tests/cf_helpers"
 )
 
 //CF is a testing wrapper around the cf cli
@@ -305,8 +304,25 @@ func (cf *CF) CreateService(serviceName, planName, instanceName string, skip *bo
 			`{"FailReason": "Failed to create Redis service instance"}`,
 		)
 		if !(*skip) {
-			cf_helpers.AwaitServiceCreation(instanceName)
+			cf.awaitServiceCreation(instanceName)
 		}
+	}
+}
+
+func (cf *CF) awaitServiceCreation(instanceName string) func() {
+	serviceFn := func() *gexec.Session {
+		return helpersCF.Cf("service", instanceName)
+	}
+
+	// longer retry backoff due to asynchronous creates
+	backoff := retry.Exponential(time.Second)
+	maxRetries := 10
+
+	return func() {
+		retry.Session(serviceFn).WithSessionTimeout(cf.ShortTimeout).AndMaxRetries(maxRetries).AndBackoff(backoff).Until(
+			retry.MatchesOutput(regexp.MustCompile("create succeeded")),
+			fmt.Sprintf(`{"FailReason": "Failed to create Redis service instance %s"}`, instanceName),
+		)
 	}
 }
 
