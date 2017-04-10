@@ -309,7 +309,7 @@ func (cf *CF) CreateService(serviceName, planName, instanceName string, skip *bo
 	}
 }
 
-func (cf *CF) awaitServiceCreation(instanceName string) func() {
+func (cf *CF) awaitServiceCreation(instanceName string) {
 	serviceFn := func() *gexec.Session {
 		return helpersCF.Cf("service", instanceName)
 	}
@@ -318,12 +318,10 @@ func (cf *CF) awaitServiceCreation(instanceName string) func() {
 	backoff := retry.Exponential(time.Second)
 	maxRetries := 10
 
-	return func() {
-		retry.Session(serviceFn).WithSessionTimeout(cf.ShortTimeout).AndMaxRetries(maxRetries).AndBackoff(backoff).Until(
-			retry.MatchesOutput(regexp.MustCompile("create succeeded")),
-			fmt.Sprintf(`{"FailReason": "Failed to create Redis service instance %s"}`, instanceName),
-		)
-	}
+	retry.Session(serviceFn).WithSessionTimeout(cf.ShortTimeout).AndMaxRetries(maxRetries).AndBackoff(backoff).Until(
+		retry.MatchesOutput(regexp.MustCompile("create succeeded")),
+		fmt.Sprintf(`{"FailReason": "Failed to create Redis service instance %s"}`, instanceName),
+	)
 }
 
 //DeleteService is equivalent to `cf delete-service {instanceName} -f`
