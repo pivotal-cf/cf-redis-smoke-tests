@@ -281,26 +281,30 @@ func (cf *CF) CreateService(serviceName, planName, instanceName string, skip *bo
 		return helpersCF.Cf("create-service", serviceName, planName, instanceName)
 	}
 
-	var SucceedsOrQuotaReached = func() retry.Condition {
-		return func(session *gexec.Session) bool {
-			actualSuccess := regexp.MustCompile("OK").Match(session.Out.Contents()) && session.ExitCode() == 0
-			failureBecauseQuotaReached :=
-				regexp.MustCompile("FAILED").Match(session.Out.Contents()) && (
-				// legacy release
-				regexp.MustCompile("instance limit for this service has been reached").Match(session.Out.Contents()) ||
-					// ODB
-					regexp.MustCompile("The quota for this service plan has been exceeded.").Match(session.Out.Contents())) &&
-					session.ExitCode() == 1
-			if failureBecauseQuotaReached {
-				fmt.Printf("No Plan Instances available for testing %s plan\n", planName)
-				*skip = true
-			}
-			return actualSuccess || failureBecauseQuotaReached
-		}
+	succeeds := func(session *gexec.Session) bool {
+		return regexp.MustCompile("OK").Match(session.Out.Contents()) && session.ExitCode() == 0
 	}
 
+	quotaReached := func(session *gexec.Session) bool {
+		failureBecauseQuotaReached :=
+			regexp.MustCompile("FAILED").Match(session.Out.Contents()) && (
+			// legacy release
+			regexp.MustCompile("instance limit for this service has been reached").Match(session.Out.Contents()) ||
+				// ODB
+				regexp.MustCompile("The quota for this service plan has been exceeded.").Match(session.Out.Contents())) &&
+				session.ExitCode() == 1
+		if failureBecauseQuotaReached {
+			fmt.Printf("No Plan Instances available for testing %s plan\n", planName)
+			*skip = true
+		}
+		return failureBecauseQuotaReached
+	}
+
+	successfulCreateServiceConditions := []retry.Condition{succeeds, quotaReached}
+
 	return func() {
-		retry.Session(createServiceFn).WithSessionTimeout(cf.ShortTimeout).AndMaxRetries(cf.MaxRetries).AndBackoff(cf.RetryBackoff).Until(SucceedsOrQuotaReached(),
+		retry.Session(createServiceFn).WithSessionTimeout(cf.ShortTimeout).AndMaxRetries(cf.MaxRetries).AndBackoff(cf.RetryBackoff).UntilAny(
+			successfulCreateServiceConditions,
 			`{"FailReason": "Failed to create Redis service instance"}`,
 		)
 		if !(*skip) {
@@ -392,9 +396,14 @@ func (cf *CF) UnbindService(appName, instanceName string) func() {
 		return helpersCF.Cf("unbind-service", appName, instanceName)
 	}
 
+	successfulUnbindConditions := []retry.Condition{
+		retry.MatchesOutput(regexp.MustCompile("OK")),
+		retry.MatchesErrorOutput(regexp.MustCompile(fmt.Sprintf("Service instance %s not found", instanceName))),
+	}
+
 	return func() {
-		retry.Session(unbindFn).WithSessionTimeout(cf.ShortTimeout).AndMaxRetries(cf.MaxRetries).AndBackoff(cf.RetryBackoff).Until(
-			retry.MatchesStdOrErrorOutput(regexp.MustCompile(fmt.Sprintf("(OK|Service instance %s not found)", instanceName))),
+		retry.Session(unbindFn).WithSessionTimeout(cf.ShortTimeout).AndMaxRetries(cf.MaxRetries).AndBackoff(cf.RetryBackoff).UntilAny(
+			successfulUnbindConditions,
 			fmt.Sprintf(`{"FailReason": "Failed to unbind %s instance from %s"}`, instanceName, appName),
 		)
 	}
