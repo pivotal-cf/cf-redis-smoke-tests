@@ -3,6 +3,7 @@ package retry_test
 import (
 	"math"
 	"os/exec"
+	"regexp"
 	"time"
 
 	. "github.com/onsi/ginkgo"
@@ -26,17 +27,35 @@ func FailingSession() *gexec.Session {
 	return s
 }
 
+var (
+	maxRetries int
+	attempts   int
+	failed     bool
+	conditions []retry.Condition
+	fn         func() *gexec.Session
+	successFn  = func() *gexec.Session {
+		attempts += 1
+		return SucceedingSession()
+	}
+	failureFn = func() *gexec.Session {
+		attempts += 1
+		return FailingSession()
+	}
+	failHandler = func(msg string, i ...int) {
+		failed = true
+	}
+)
+
 var _ = Describe("retry", func() {
 	Describe("Until", func() {
-		Context("when the session succeeds immediatly", func() {
-			var (
+		Context("when the session succeeds immediately", func() {
+			BeforeEach(func() {
 				attempts = 0
-
 				fn = func() *gexec.Session {
 					attempts += 1
 					return SucceedingSession()
 				}
-			)
+			})
 
 			It("succeeds without retrying", func() {
 				retry.Session(fn).WithMaxRetries(3).AndBackoff(retry.None(10 * time.Millisecond)).Until(retry.Succeeds)
@@ -47,19 +66,8 @@ var _ = Describe("retry", func() {
 
 		Context("when the session always fails", func() {
 			var (
-				attempts int
-				failed   bool
-
 				maxRetries = 3
-
-				fn = func() *gexec.Session {
-					attempts += 1
-					return FailingSession()
-				}
-
-				failHandler = func(msg string, i ...int) {
-					failed = true
-				}
+				fn         = failureFn
 			)
 
 			BeforeEach(func() {
@@ -111,6 +119,110 @@ var _ = Describe("retry", func() {
 				retry.Session(fn).WithMaxRetries(failCount * 2).AndBackoff(retry.None(10 * time.Millisecond)).Until(retry.Succeeds)
 
 				Expect(attempts).To(Equal(failCount + 1))
+			})
+		})
+	})
+
+	Describe("UntilAny", func() {
+		var (
+			fn = successFn
+		)
+
+		BeforeEach(func() {
+			attempts = 0
+			failed = false
+		})
+
+		JustBeforeEach(func() {
+			retry.Session(fn).WithMaxRetries(3).AndBackoff(retry.None(1 * time.Millisecond)).AndFailHandler(failHandler).UntilAny(conditions)
+		})
+
+		BeforeEach(func() {
+			conditions = []retry.Condition{
+				retry.MatchesOutput(regexp.MustCompile("will-not-match-but-does-not-matter")),
+				retry.Succeeds,
+			}
+		})
+
+		It("succeeds", func() {
+			Expect(attempts).To(Equal(1))
+			Expect(failed).To(BeFalse())
+		})
+
+		Context("when no condition is satisfied", func() {
+			BeforeEach(func() {
+				conditions = []retry.Condition{
+					retry.MatchesOutput(regexp.MustCompile("OhNoooeess")),
+					retry.MatchesOutput(regexp.MustCompile("OhNoooeess again")),
+				}
+			})
+
+			It("fails", func() {
+				Expect(attempts).To(Equal(4))
+				Expect(failed).To(BeTrue())
+			})
+		})
+
+		Context("when no conditions are provided", func() {
+			BeforeEach(func() {
+				conditions = []retry.Condition{}
+			})
+
+			It("fails", func() {
+				Expect(failed).To(BeTrue())
+				Expect(attempts).To(Equal(0))
+			})
+		})
+	})
+
+	Describe("UntilAll", func() {
+		var (
+			fn = successFn
+		)
+
+		BeforeEach(func() {
+			attempts = 0
+			failed = false
+		})
+
+		JustBeforeEach(func() {
+			retry.Session(fn).WithMaxRetries(3).AndBackoff(retry.None(1 * time.Millisecond)).AndFailHandler(failHandler).UntilAll(conditions)
+		})
+
+		BeforeEach(func() {
+			conditions = []retry.Condition{
+				retry.Succeeds,
+				retry.MatchesOutput(regexp.MustCompile("hello")),
+			}
+		})
+
+		It("succeeds", func() {
+			Expect(attempts).To(Equal(1))
+			Expect(failed).To(BeFalse())
+		})
+
+		Context("when one condition is not satisfied", func() {
+			BeforeEach(func() {
+				conditions = []retry.Condition{
+					retry.Succeeds,
+					retry.MatchesOutput(regexp.MustCompile("OhNoooeess")),
+				}
+			})
+
+			It("fails", func() {
+				Expect(attempts).To(Equal(4))
+				Expect(failed).To(BeTrue())
+			})
+		})
+
+		Context("when no conditions are provided", func() {
+			BeforeEach(func() {
+				conditions = []retry.Condition{}
+			})
+
+			It("fails", func() {
+				Expect(failed).To(BeTrue())
+				Expect(attempts).To(Equal(0))
 			})
 		})
 	})

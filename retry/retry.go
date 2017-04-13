@@ -76,6 +76,40 @@ func (rc *retryCheck) Until(c Condition, msg ...string) {
 	rc.failHandler(msg[0])
 }
 
+func (rc *retryCheck) UntilAny(c []Condition, msg ...string) {
+	if len(c) < 1 {
+		rc.failHandler("Provide at least one condition to match")
+		return
+	}
+
+	if rc.checkAny(c...) {
+		return
+	}
+
+	if len(msg) == 0 {
+		msg = []string{fmt.Sprintf("Exceeded %d retries", rc.maxRetries)}
+	}
+
+	rc.failHandler(msg[0])
+}
+
+func (rc *retryCheck) UntilAll(c []Condition, msg ...string) {
+	if len(c) < 1 {
+		rc.failHandler("Provide at least one condition to match")
+		return
+	}
+
+	if rc.checkAll(c...) {
+		return
+	}
+
+	if len(msg) == 0 {
+		msg = []string{fmt.Sprintf("Exceeded %d retries", rc.maxRetries)}
+	}
+
+	rc.failHandler(msg[0])
+}
+
 func (rc *retryCheck) check(c Condition) bool {
 	for retry := 0; retry <= rc.maxRetries; retry++ {
 		time.Sleep(rc.backoff(uint(retry)))
@@ -87,6 +121,38 @@ func (rc *retryCheck) check(c Condition) bool {
 		}
 	}
 
+	return false
+}
+
+func (rc *retryCheck) checkAny(conditions ...Condition) bool {
+	for retry := 0; retry <= rc.maxRetries; retry++ {
+		time.Sleep(rc.backoff(uint(retry)))
+
+		session := rc.sessionProvider().Wait(rc.sessionTimeout)
+
+		for _, condition := range conditions {
+			if condition(session) {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+func (rc *retryCheck) checkAll(conditions ...Condition) bool {
+RetryLoop:
+	for retry := 0; retry <= rc.maxRetries; retry++ {
+		time.Sleep(rc.backoff(uint(retry)))
+
+		session := rc.sessionProvider().Wait(rc.sessionTimeout)
+
+		for _, condition := range conditions {
+			if !condition(session) {
+				continue RetryLoop
+			}
+		}
+		return true
+	}
 	return false
 }
 
