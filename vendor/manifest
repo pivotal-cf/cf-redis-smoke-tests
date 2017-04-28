@@ -2,42 +2,6 @@
 	"version": 0,
 	"dependencies": [
 		{
-			"importpath": "github.com/cloudfoundry-incubator/cf-test-helpers/cf",
-			"repository": "https://github.com/cloudfoundry-incubator/cf-test-helpers",
-			"vcs": "git",
-			"revision": "2e4abcefe5452011fd3a56e50e9e1c6ebec5e190",
-			"branch": "master",
-			"path": "/cf",
-			"notests": true
-		},
-		{
-			"importpath": "github.com/cloudfoundry-incubator/cf-test-helpers/commandreporter",
-			"repository": "https://github.com/cloudfoundry-incubator/cf-test-helpers",
-			"vcs": "git",
-			"revision": "2e4abcefe5452011fd3a56e50e9e1c6ebec5e190",
-			"branch": "master",
-			"path": "commandreporter",
-			"notests": true
-		},
-		{
-			"importpath": "github.com/cloudfoundry-incubator/cf-test-helpers/commandstarter",
-			"repository": "https://github.com/cloudfoundry-incubator/cf-test-helpers",
-			"vcs": "git",
-			"revision": "2e4abcefe5452011fd3a56e50e9e1c6ebec5e190",
-			"branch": "master",
-			"path": "commandstarter",
-			"notests": true
-		},
-		{
-			"importpath": "github.com/cloudfoundry-incubator/cf-test-helpers/internal",
-			"repository": "https://github.com/cloudfoundry-incubator/cf-test-helpers",
-			"vcs": "git",
-			"revision": "2e4abcefe5452011fd3a56e50e9e1c6ebec5e190",
-			"branch": "master",
-			"path": "internal",
-			"notests": true
-		},
-		{
 			"importpath": "github.com/craigfurman/herottp",
 			"repository": "https://github.com/craigfurman/herottp",
 			"vcs": "git",
