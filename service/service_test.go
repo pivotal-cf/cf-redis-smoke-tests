@@ -77,7 +77,7 @@ var _ = Describe("Redis Service", func() {
 			),
 			reporter.NewStep(
 				fmt.Sprintf("Create user '%s'", regularContext.Username),
-				testCF.CreateUser(regularContext.Username, cfTestConfig.ConfigurableTestPassword),
+				testCF.CreateUser(regularContext.Username, regularContext.Password),
 			),
 			reporter.NewStep(
 				fmt.Sprintf(
