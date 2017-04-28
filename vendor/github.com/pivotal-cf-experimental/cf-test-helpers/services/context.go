@@ -1,6 +1,8 @@
 package services
 
 import (
+	"crypto/rand"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -62,12 +64,13 @@ type QuotaDefinition struct {
 
 func NewContext(config Config, prefix string) Context {
 	node := ginkgoconfig.GinkgoConfig.ParallelNode
-	timeTag := time.Now().Format("2006_01_02-15h04m05.999s")
+	timeTag := CurrentTimeFormatted()
 
 	var organizationName string
 	var spaceName string
 	var useExistingOrg bool
 	var useExistingSpace bool
+	var regUserPass string
 
 	if config.OrgName != "" {
 		useExistingOrg = true
@@ -85,9 +88,10 @@ func NewContext(config Config, prefix string) Context {
 		spaceName = fmt.Sprintf("%s-SPACE-%d-%s", prefix, node, timeTag)
 	}
 
-	regUserPass := "meow"
 	if config.ConfigurableTestPassword != "" {
 		regUserPass = config.ConfigurableTestPassword
+	} else {
+		regUserPass = RandomStringOfLength(20)
 	}
 
 	return &context{
@@ -263,4 +267,23 @@ func (c context) writeJSONToTempFile(object interface{}, filePrefix string) (fil
 	}
 
 	return filePath, nil
+}
+
+func RandomStringOfLength(number int) string {
+	randomBytes := make([]byte, number)
+	_, err := rand.Read(randomBytes)
+	if err != nil {
+		return CurrentTimeFormatted()
+	}
+	return encodeBase64(randomBytes)
+}
+
+func encodeBase64(password []byte) string {
+	encodedBytes := make([]byte, base64.StdEncoding.EncodedLen(len(password)))
+	base64.StdEncoding.Encode(encodedBytes, password)
+	return string(encodedBytes)
+}
+
+func CurrentTimeFormatted() string {
+	return time.Now().Format("2006_01_02-15h04m05.999s")
 }
