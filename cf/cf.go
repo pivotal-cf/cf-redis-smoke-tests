@@ -16,7 +16,7 @@ import (
 	"github.com/pivotal-cf/cf-redis-smoke-tests/retry"
 )
 
-//CF is a testing wrapper around the cf cli
+// CF is a testing wrapper around the cf cli
 type CF struct {
 	ShortTimeout time.Duration
 	LongTimeout  time.Duration
@@ -24,7 +24,7 @@ type CF struct {
 	RetryBackoff retry.Backoff
 }
 
-//API is equivalent to `cf api {endpoint} [--skip-ssl-validation]`
+// API is equivalent to `cf api {endpoint} [--skip-ssl-validation]`
 func (cf *CF) API(endpoint string, skipSSLValidation bool) func() {
 	apiCmd := []string{"api", endpoint}
 
@@ -44,7 +44,7 @@ func (cf *CF) API(endpoint string, skipSSLValidation bool) func() {
 	}
 }
 
-//Auth is equivalent to `cf auth {user} {password}`
+// Auth is equivalent to `cf auth {user} {password}`
 func (cf *CF) Auth(user, password string) func() {
 	authFn := func() *gexec.Session {
 		return helpersCF.Cf("auth", user, password)
@@ -58,7 +58,7 @@ func (cf *CF) Auth(user, password string) func() {
 	}
 }
 
-//CreateQuota is equivalent to `cf create-quota {name} [args...]`
+// CreateQuota is equivalent to `cf create-quota {name} [args...]`
 func (cf *CF) CreateQuota(name string, args ...string) func() {
 	cfArgs := []string{"create-quota", name}
 	cfArgs = append(cfArgs, args...)
@@ -74,7 +74,21 @@ func (cf *CF) CreateQuota(name string, args ...string) func() {
 	}
 }
 
-//CreateOrg is equivalent to `cf create-org {org} -q {quota}`
+// DeleteOrg is equivalent to `cf delete-org {name} -f`
+func (cf *CF) DeleteOrg(name string) func() {
+	deleteOrg := func() *gexec.Session {
+		return helpersCF.Cf("delete-org", name, "-f")
+	}
+
+	return func() {
+		retry.Session(deleteOrg).WithSessionTimeout(cf.ShortTimeout).AndMaxRetries(cf.MaxRetries).AndBackoff(cf.RetryBackoff).Until(
+			retry.Succeeds,
+			`{"FailReason": "Failed to delete org"}`,
+		)
+	}
+}
+
+// CreateOrg is equivalent to `cf create-org {org} -q {quota}`
 func (cf *CF) CreateOrg(org, quota string) func() {
 	createOrgFn := func() *gexec.Session {
 		return helpersCF.Cf("create-org", org, "-q", quota)
@@ -83,13 +97,13 @@ func (cf *CF) CreateOrg(org, quota string) func() {
 	return func() {
 		retry.Session(createOrgFn).WithSessionTimeout(cf.ShortTimeout).AndMaxRetries(cf.MaxRetries).AndBackoff(cf.RetryBackoff).Until(
 			retry.Succeeds,
-			`{"FailReason": "Failed to create CF test org"}`,
+			`{"FailReason": "Failed to create org"}`,
 		)
 	}
 }
 
-//EnableServiceAccess is equivalent to `cf enable-service-access -o {org} {service-offering}`
-//In order to run enable-service-access idempotently we disable-service-access before.
+// EnableServiceAccess is equivalent to `cf enable-service-access -o {org} {service-offering}`
+// In order to run enable-service-access idempotently we disable-service-access before.
 func (cf *CF) EnableServiceAccess(org, service string) func() {
 	disableServiceAccessFn := func() *gexec.Session {
 		return helpersCF.Cf("disable-service-access", "-o", org, service)
@@ -110,7 +124,7 @@ func (cf *CF) EnableServiceAccess(org, service string) func() {
 	}
 }
 
-//TargetOrg is equivalent to `cf target -o {org}`
+// TargetOrg is equivalent to `cf target -o {org}`
 func (cf *CF) TargetOrg(org string) func() {
 	targetOrgFn := func() *gexec.Session {
 		return helpersCF.Cf("target", "-o", org)
@@ -123,7 +137,7 @@ func (cf *CF) TargetOrg(org string) func() {
 	}
 }
 
-//TargetOrgAndSpace is equivalent to `cf target -o {org} -s {space}`
+// TargetOrgAndSpace is equivalent to `cf target -o {org} -s {space}`
 func (cf *CF) TargetOrgAndSpace(org, space string) func() {
 	targetFn := func() *gexec.Session {
 		return helpersCF.Cf("target", "-o", org, "-s", space)
@@ -137,7 +151,7 @@ func (cf *CF) TargetOrgAndSpace(org, space string) func() {
 	}
 }
 
-//CreateSpace is equivalent to `cf create-space {space}`
+// CreateSpace is equivalent to `cf create-space {space}`
 func (cf *CF) CreateSpace(space string) func() {
 	createSpaceFn := func() *gexec.Session {
 		return helpersCF.Cf("create-space", space)
@@ -151,7 +165,7 @@ func (cf *CF) CreateSpace(space string) func() {
 	}
 }
 
-//CreateSecurityGroup is equivalent to `cf create-security-group {securityGroup} {configPath}`
+// CreateSecurityGroup is equivalent to `cf create-security-group {securityGroup} {configPath}`
 func (cf *CF) CreateAndBindSecurityGroup(securityGroup, appName, org, space string) func() {
 	return func() {
 		appGuid := cf.getAppGuid(appName)
@@ -186,7 +200,7 @@ func (cf *CF) CreateAndBindSecurityGroup(securityGroup, appName, org, space stri
 	}
 }
 
-//DeleteSecurityGroup is equivalent to `cf delete-security-group {securityGroup} -f`
+// DeleteSecurityGroup is equivalent to `cf delete-security-group {securityGroup} -f`
 func (cf *CF) DeleteSecurityGroup(securityGroup string) func() {
 	delSecGroupFn := func() *gexec.Session {
 		return helpersCF.Cf("delete-security-group", securityGroup, "-f")
@@ -200,7 +214,7 @@ func (cf *CF) DeleteSecurityGroup(securityGroup string) func() {
 	}
 }
 
-//CreateUser is equivalent to `cf create-user {name} {password}`
+// CreateUser is equivalent to `cf create-user {name} {password}`
 func (cf *CF) CreateUser(name, password string) func() {
 
 	createUserFn := func() *gexec.Session {
@@ -216,7 +230,7 @@ func (cf *CF) CreateUser(name, password string) func() {
 	}
 }
 
-//DeleteUser is equivalent to `cf delete-user -f {name}`
+// DeleteUser is equivalent to `cf delete-user -f {name}`
 func (cf *CF) DeleteUser(name string) func() {
 	deleteUserFn := func() *gexec.Session {
 		return helpersCF.Cf("delete-user", "-f", name)
@@ -230,7 +244,7 @@ func (cf *CF) DeleteUser(name string) func() {
 	}
 }
 
-//SetSpaceRole is equivalent to `cf set-space-role {name} {org} {space} {role}`
+// SetSpaceRole is equivalent to `cf set-space-role {name} {org} {space} {role}`
 func (cf *CF) SetSpaceRole(name, org, space, role string) func() {
 	setSpaceRoleFn := func() *gexec.Session {
 		return helpersCF.Cf("set-space-role", name, org, space, role)
@@ -244,7 +258,7 @@ func (cf *CF) SetSpaceRole(name, org, space, role string) func() {
 	}
 }
 
-//Push is equivalent to `cf push {appName} [args...]`
+// Push is equivalent to `cf push {appName} [args...]`
 func (cf *CF) Push(appName string, args ...string) func() {
 	pushArgs := []string{"push", appName}
 	pushArgs = append(pushArgs, args...)
@@ -261,7 +275,7 @@ func (cf *CF) Push(appName string, args ...string) func() {
 	}
 }
 
-//Delete is equivalent to `cf delete {appName} -f`
+// Delete is equivalent to `cf delete {appName} -f`
 func (cf *CF) Delete(appName string) func() {
 	deleteAppFn := func() *gexec.Session {
 		return helpersCF.Cf("delete", appName, "-f", "-r")
@@ -275,7 +289,7 @@ func (cf *CF) Delete(appName string) func() {
 	}
 }
 
-//CreateService is equivalent to `cf create-service {serviceName} {planName} {instanceName}`
+// CreateService is equivalent to `cf create-service {serviceName} {planName} {instanceName}`
 func (cf *CF) CreateService(serviceName, planName, instanceName string, skip *bool) func() {
 	createServiceFn := func() *gexec.Session {
 		return helpersCF.Cf("create-service", serviceName, planName, instanceName)
@@ -328,7 +342,7 @@ func (cf *CF) awaitServiceCreation(instanceName string) {
 	)
 }
 
-//DeleteService is equivalent to `cf delete-service {instanceName} -f`
+// DeleteService is equivalent to `cf delete-service {instanceName} -f`
 func (cf *CF) DeleteService(instanceName string) func() {
 	deleteFn := func() *gexec.Session {
 		return helpersCF.Cf("delete-service", "-f", instanceName)
@@ -376,7 +390,7 @@ func (cf *CF) EnsureAllServiceInstancesGone() func() {
 	}
 }
 
-//BindService is equivalent to `cf bind-service {appName} {instanceName}`
+// BindService is equivalent to `cf bind-service {appName} {instanceName}`
 func (cf *CF) BindService(appName, instanceName string) func() {
 	bindFn := func() *gexec.Session {
 		return helpersCF.Cf("bind-service", appName, instanceName)
@@ -390,7 +404,7 @@ func (cf *CF) BindService(appName, instanceName string) func() {
 	}
 }
 
-//UnbindService is equivalent to `cf unbind-service {appName} {instanceName}`
+// UnbindService is equivalent to `cf unbind-service {appName} {instanceName}`
 func (cf *CF) UnbindService(appName, instanceName string) func() {
 	unbindFn := func() *gexec.Session {
 		return helpersCF.Cf("unbind-service", appName, instanceName)
@@ -409,7 +423,7 @@ func (cf *CF) UnbindService(appName, instanceName string) func() {
 	}
 }
 
-//Start is equivalent to `cf start {appName}`
+// Start is equivalent to `cf start {appName}`
 func (cf *CF) Start(appName string) func() {
 	startFn := func() *gexec.Session {
 		return helpersCF.Cf("start", appName)
@@ -423,7 +437,7 @@ func (cf *CF) Start(appName string) func() {
 	}
 }
 
-//SetEnv is equivalent to `cf set-env {appName} {envVarName} {instanceName}`
+// SetEnv is equivalent to `cf set-env {appName} {envVarName} {instanceName}`
 func (cf *CF) SetEnv(appName, environmentVariable, instanceName string) func() {
 	setEnvFn := func() *gexec.Session {
 		return helpersCF.Cf("set-env", appName, environmentVariable, instanceName)
@@ -437,7 +451,7 @@ func (cf *CF) SetEnv(appName, environmentVariable, instanceName string) func() {
 	}
 }
 
-//Logout is equivalent to `cf logout`
+// Logout is equivalent to `cf logout`
 func (cf *CF) Logout() func() {
 	logoutFn := func() *gexec.Session {
 		return helpersCF.Cf("logout")

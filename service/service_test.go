@@ -219,6 +219,10 @@ var _ = Describe("Redis Service", func() {
 				testCF.DeleteUser(regularContext.Username),
 			),
 			reporter.NewStep(
+				fmt.Sprintf("Delete org '%s'", cfTestConfig.OrgName),
+				testCF.DeleteOrg(cfTestConfig.OrgName),
+			),
+			reporter.NewStep(
 				"Log out",
 				testCF.Logout(),
 			),
