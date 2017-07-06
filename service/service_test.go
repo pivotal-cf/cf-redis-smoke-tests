@@ -60,20 +60,20 @@ var _ = Describe("Redis Service", func() {
 				testCF.CreateQuota("redis-smoke-test-quota", createQuotaArgs...),
 			),
 			reporter.NewStep(
-				fmt.Sprintf("Create '%s' org", cfTestConfig.OrgName),
-				testCF.CreateOrg(cfTestConfig.OrgName, "redis-smoke-test-quota"),
+				fmt.Sprintf("Create '%s' org", regularContext.Org),
+				testCF.CreateOrg(regularContext.Org, "redis-smoke-test-quota"),
 			),
 			reporter.NewStep(
-				fmt.Sprintf("Enable service access for '%s' org", cfTestConfig.OrgName),
-				testCF.EnableServiceAccess(cfTestConfig.OrgName, redisConfig.ServiceName),
+				fmt.Sprintf("Enable service access for '%s' org", regularContext.Org),
+				testCF.EnableServiceAccess(regularContext.Org, redisConfig.ServiceName),
 			),
 			reporter.NewStep(
-				fmt.Sprintf("Target '%s' org", cfTestConfig.OrgName),
-				testCF.TargetOrg(cfTestConfig.OrgName),
+				fmt.Sprintf("Target '%s' org", regularContext.Org),
+				testCF.TargetOrg(regularContext.Org),
 			),
 			reporter.NewStep(
-				fmt.Sprintf("Create '%s' space", cfTestConfig.SpaceName),
-				testCF.CreateSpace(cfTestConfig.SpaceName),
+				fmt.Sprintf("Create '%s' space", regularContext.Space),
+				testCF.CreateSpace(regularContext.Space),
 			),
 			reporter.NewStep(
 				fmt.Sprintf("Create user '%s'", regularContext.Username),
@@ -83,25 +83,25 @@ var _ = Describe("Redis Service", func() {
 				fmt.Sprintf(
 					"Assign user '%s' to 'SpaceManager' role for '%s'",
 					regularContext.Username,
-					cfTestConfig.SpaceName,
+					regularContext.Space,
 				),
-				testCF.SetSpaceRole(regularContext.Username, regularContext.Org, cfTestConfig.SpaceName, "SpaceManager"),
+				testCF.SetSpaceRole(regularContext.Username, regularContext.Org, regularContext.Space, "SpaceManager"),
 			),
 			reporter.NewStep(
 				fmt.Sprintf(
 					"Assign user '%s' to 'SpaceDeveloper' role for '%s'",
 					regularContext.Username,
-					cfTestConfig.SpaceName,
+					regularContext.Space,
 				),
-				testCF.SetSpaceRole(regularContext.Username, regularContext.Org, cfTestConfig.SpaceName, "SpaceDeveloper"),
+				testCF.SetSpaceRole(regularContext.Username, regularContext.Org, regularContext.Space, "SpaceDeveloper"),
 			),
 			reporter.NewStep(
 				fmt.Sprintf(
 					"Assign user '%s' to 'SpaceAuditor' role for '%s'",
 					regularContext.Username,
-					cfTestConfig.SpaceName,
+					regularContext.Space,
 				),
-				testCF.SetSpaceRole(regularContext.Username, regularContext.Org, cfTestConfig.SpaceName, "SpaceAuditor"),
+				testCF.SetSpaceRole(regularContext.Username, regularContext.Org, regularContext.Space, "SpaceAuditor"),
 			),
 			reporter.NewStep(
 				"Log out",
@@ -134,8 +134,8 @@ var _ = Describe("Redis Service", func() {
 				testCF.Auth(regularContext.Username, regularContext.Password),
 			),
 			reporter.NewStep(
-				fmt.Sprintf("Target '%s' org and '%s' space", cfTestConfig.OrgName, cfTestConfig.SpaceName),
-				testCF.TargetOrgAndSpace(cfTestConfig.OrgName, cfTestConfig.SpaceName),
+				fmt.Sprintf("Target '%s' org and '%s' space", regularContext.Org, regularContext.Space),
+				testCF.TargetOrgAndSpace(regularContext.Org, regularContext.Space),
 			),
 			reporter.NewStep(
 				"Push the redis sample app to Cloud Foundry",
@@ -207,8 +207,8 @@ var _ = Describe("Redis Service", func() {
 				testCF.Auth(cfTestConfig.AdminUser, cfTestConfig.AdminPassword),
 			),
 			reporter.NewStep(
-				fmt.Sprintf("Target '%s' org and '%s' space", cfTestConfig.OrgName, cfTestConfig.SpaceName),
-				testCF.TargetOrgAndSpace(cfTestConfig.OrgName, cfTestConfig.SpaceName),
+				fmt.Sprintf("Target '%s' org and '%s' space", regularContext.Org, regularContext.Space),
+				testCF.TargetOrgAndSpace(regularContext.Org, regularContext.Space),
 			),
 			reporter.NewStep(
 				"Ensure no service-instances left",
@@ -219,8 +219,8 @@ var _ = Describe("Redis Service", func() {
 				testCF.DeleteUser(regularContext.Username),
 			),
 			reporter.NewStep(
-				fmt.Sprintf("Delete org '%s'", cfTestConfig.OrgName),
-				testCF.DeleteOrg(cfTestConfig.OrgName),
+				fmt.Sprintf("Delete org '%s'", regularContext.Org),
+				testCF.DeleteOrg(regularContext.Org),
 			),
 			reporter.NewStep(
 				"Log out",
@@ -261,20 +261,20 @@ var _ = Describe("Redis Service", func() {
 					testCF.Auth(cfTestConfig.AdminUser, cfTestConfig.AdminPassword),
 				),
 				reporter.NewStep(
-					fmt.Sprintf("Target '%s' org and '%s' space", cfTestConfig.OrgName, cfTestConfig.SpaceName),
-					testCF.TargetOrgAndSpace(cfTestConfig.OrgName, cfTestConfig.SpaceName),
+					fmt.Sprintf("Target '%s' org and '%s' space", regularContext.Org, regularContext.Space),
+					testCF.TargetOrgAndSpace(regularContext.Org, regularContext.Space),
 				),
 				reporter.NewStep(
 					"Create and bind security group for running smoke tests",
-					testCF.CreateAndBindSecurityGroup("redis-smoke-tests-sg", appName, cfTestConfig.OrgName, cfTestConfig.SpaceName),
+					testCF.CreateAndBindSecurityGroup("redis-smoke-tests-sg", appName, regularContext.Org, regularContext.Space),
 				),
 				reporter.NewStep(
 					fmt.Sprintf("Log in as %s", regularContext.Username),
 					testCF.Auth(regularContext.Username, regularContext.Password),
 				),
 				reporter.NewStep(
-					fmt.Sprintf("Target '%s' org and '%s' space", cfTestConfig.OrgName, cfTestConfig.SpaceName),
-					testCF.TargetOrgAndSpace(cfTestConfig.OrgName, cfTestConfig.SpaceName),
+					fmt.Sprintf("Target '%s' org and '%s' space", regularContext.Org, regularContext.Space),
+					testCF.TargetOrgAndSpace(regularContext.Org, regularContext.Space),
 				),
 				reporter.NewStep(
 					"Start the app",
