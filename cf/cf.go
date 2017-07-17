@@ -301,12 +301,13 @@ func (cf *CF) CreateService(serviceName, planName, instanceName string, skip *bo
 
 	quotaReached := func(session *gexec.Session) bool {
 		failureBecauseQuotaReached :=
-			regexp.MustCompile("FAILED").Match(session.Out.Contents()) && (
+			regexp.MustCompile("FAILED").Match(session.Out.Contents()) && session.ExitCode() == 1 && (
 			// legacy release
 			regexp.MustCompile("instance limit for this service has been reached").Match(session.Out.Contents()) ||
-				// ODB
-				regexp.MustCompile("The quota for this service plan has been exceeded.").Match(session.Out.Contents())) &&
-				session.ExitCode() == 1
+				// ODB plan quota
+				regexp.MustCompile("The quota for this service plan has been exceeded.").Match(session.Out.Contents()) ||
+				// ODB global quota
+				regexp.MustCompile("The quota for this service has been exceeded.").Match(session.Out.Contents()))
 		if failureBecauseQuotaReached {
 			fmt.Printf("No Plan Instances available for testing %s plan\n", planName)
 			*skip = true
