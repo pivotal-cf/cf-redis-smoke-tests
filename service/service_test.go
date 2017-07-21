@@ -30,6 +30,7 @@ var _ = Describe("Redis Service", func() {
 		serviceInstanceName string
 		appName             string
 		planName            string
+		securityGroupName   string
 
 		context services.Context
 	)
@@ -120,6 +121,7 @@ var _ = Describe("Redis Service", func() {
 		regularContext := context.RegularUserContext()
 		appName = randomName()
 		serviceInstanceName = randomName()
+		securityGroupName = randomName()
 
 		pushArgs := []string{
 			"-m", "256M",
@@ -178,8 +180,8 @@ var _ = Describe("Redis Service", func() {
 				testCF.Auth(cfTestConfig.AdminUser, cfTestConfig.AdminPassword),
 			),
 			reporter.NewStep(
-				"Delete security group 'redis-smoke-tests-sg'",
-				testCF.DeleteSecurityGroup("redis-smoke-tests-sg"),
+				fmt.Sprintf("Delete security group '%s'", securityGroupName),
+				testCF.DeleteSecurityGroup(securityGroupName),
 			),
 			reporter.NewStep(
 				"Log out",
@@ -265,8 +267,8 @@ var _ = Describe("Redis Service", func() {
 					testCF.TargetOrgAndSpace(regularContext.Org, regularContext.Space),
 				),
 				reporter.NewStep(
-					"Create and bind security group for running smoke tests",
-					testCF.CreateAndBindSecurityGroup("redis-smoke-tests-sg", appName, regularContext.Org, regularContext.Space),
+					fmt.Sprintf("Create and bind security group '%s' for running smoke tests", securityGroupName),
+					testCF.CreateAndBindSecurityGroup(securityGroupName, appName, regularContext.Org, regularContext.Space),
 				),
 				reporter.NewStep(
 					fmt.Sprintf("Log in as %s", regularContext.Username),
