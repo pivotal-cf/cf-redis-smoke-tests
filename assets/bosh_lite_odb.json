@@ -15,19 +15,6 @@
   "api": "api.bosh-lite.com",
   "admin_user": "admin",
   "admin_password": "admin",
-  "space_name": "redis-smoke-test-space",
-  "org_name": "redis-smoke-test-org",
   "skip_ssl_validation": true,
-  "create_permissive_security_group": false,
-  "security_groups": [{
-      "protocol": "tcp",
-      "destination": "10.0.0.0-10.255.255.255",
-      "ports": "6379"
-    },
-    {
-      "protocol": "tcp",
-      "destination": "10.0.0.0-10.255.255.255",
-      "ports": "32768-61000"
-    }
-  ]
+  "create_permissive_security_group": false
 }
