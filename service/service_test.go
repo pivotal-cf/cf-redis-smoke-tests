@@ -86,8 +86,8 @@ var _ = Describe("Redis Service", func() {
 				testCF.CreateSpace(regularContext.Space),
 			),
 			reporter.NewStep(
-				fmt.Sprintf("Target '%s' org and '%s' space", cfTestContext.Org, cfTestContext.Space),
-				testCF.TargetOrgAndSpace(cfTestContext.Org, cfTestContext.Space),
+				fmt.Sprintf("Target '%s' org and '%s' space", regularContext.Org, regularContext.Space),
+				testCF.TargetOrgAndSpace(regularContext.Org, regularContext.Space),
 			),
 		}
 
