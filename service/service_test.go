@@ -12,8 +12,15 @@ import (
 	"github.com/pivotal-cf-experimental/cf-test-helpers/services"
 	smokeTestCF "github.com/pivotal-cf/cf-redis-smoke-tests/cf"
 
+	"encoding/json"
+
 	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 )
+
+type CFTestContext struct {
+	Org, Space, Username, Password string
+}
 
 var _ = Describe("Redis Service", func() {
 	var (
@@ -32,10 +39,12 @@ var _ = Describe("Redis Service", func() {
 		planName            string
 		securityGroupName   string
 
+		cfTestContext CFTestContext
+
 		context services.Context
 	)
 
-	BeforeSuite(func() {
+	SynchronizedBeforeSuite(func() []byte {
 		context = services.NewContext(cfTestConfig, "redis-test")
 
 		createQuotaArgs := []string{
@@ -77,36 +86,8 @@ var _ = Describe("Redis Service", func() {
 				testCF.CreateSpace(regularContext.Space),
 			),
 			reporter.NewStep(
-				fmt.Sprintf("Create user '%s'", regularContext.Username),
-				testCF.CreateUser(regularContext.Username, regularContext.Password),
-			),
-			reporter.NewStep(
-				fmt.Sprintf(
-					"Assign user '%s' to 'SpaceManager' role for '%s'",
-					regularContext.Username,
-					regularContext.Space,
-				),
-				testCF.SetSpaceRole(regularContext.Username, regularContext.Org, regularContext.Space, "SpaceManager"),
-			),
-			reporter.NewStep(
-				fmt.Sprintf(
-					"Assign user '%s' to 'SpaceDeveloper' role for '%s'",
-					regularContext.Username,
-					regularContext.Space,
-				),
-				testCF.SetSpaceRole(regularContext.Username, regularContext.Org, regularContext.Space, "SpaceDeveloper"),
-			),
-			reporter.NewStep(
-				fmt.Sprintf(
-					"Assign user '%s' to 'SpaceAuditor' role for '%s'",
-					regularContext.Username,
-					regularContext.Space,
-				),
-				testCF.SetSpaceRole(regularContext.Username, regularContext.Org, regularContext.Space, "SpaceAuditor"),
-			),
-			reporter.NewStep(
-				"Log out",
-				testCF.Logout(),
+				fmt.Sprintf("Target '%s' org and '%s' space", cfTestContext.Org, cfTestContext.Space),
+				testCF.TargetOrgAndSpace(cfTestContext.Org, cfTestContext.Space),
 			),
 		}
 
@@ -115,10 +96,25 @@ var _ = Describe("Redis Service", func() {
 		for _, task := range beforeSuiteSteps {
 			task.Perform()
 		}
+
+		cfTestContext = CFTestContext{
+			Org:      regularContext.Org,
+			Space:    regularContext.Space,
+			Username: regularContext.Username,
+			Password: regularContext.Password,
+		}
+
+		rawTestContext, err := json.Marshal(cfTestContext)
+		Expect(err).NotTo(HaveOccurred())
+
+		return rawTestContext
+	}, func(data []byte) {
+		fmt.Println("A random name: ", randomName())
+		err := json.Unmarshal(data, &cfTestContext)
+		Expect(err).NotTo(HaveOccurred())
 	})
 
 	BeforeEach(func() {
-		regularContext := context.RegularUserContext()
 		appName = randomName()
 		serviceInstanceName = randomName()
 		securityGroupName = randomName()
@@ -132,12 +128,12 @@ var _ = Describe("Redis Service", func() {
 
 		specSteps := []*reporter.Step{
 			reporter.NewStep(
-				fmt.Sprintf("Log in as %s", regularContext.Username),
-				testCF.Auth(regularContext.Username, regularContext.Password),
+				"Log in as admin",
+				testCF.Auth(cfTestConfig.AdminUser, cfTestConfig.AdminPassword),
 			),
 			reporter.NewStep(
-				fmt.Sprintf("Target '%s' org and '%s' space", regularContext.Org, regularContext.Space),
-				testCF.TargetOrgAndSpace(regularContext.Org, regularContext.Space),
+				fmt.Sprintf("Target '%s' org and '%s' space", cfTestContext.Org, cfTestContext.Space),
+				testCF.TargetOrgAndSpace(cfTestContext.Org, cfTestContext.Space),
 			),
 			reporter.NewStep(
 				"Push the redis sample app to Cloud Foundry",
@@ -172,20 +168,8 @@ var _ = Describe("Redis Service", func() {
 				testCF.Delete(appName),
 			),
 			reporter.NewStep(
-				"Log out",
-				testCF.Logout(),
-			),
-			reporter.NewStep(
-				"Log in as admin",
-				testCF.Auth(cfTestConfig.AdminUser, cfTestConfig.AdminPassword),
-			),
-			reporter.NewStep(
 				fmt.Sprintf("Delete security group '%s'", securityGroupName),
 				testCF.DeleteSecurityGroup(securityGroupName),
-			),
-			reporter.NewStep(
-				"Log out",
-				testCF.Logout(),
 			),
 		}
 
@@ -196,33 +180,19 @@ var _ = Describe("Redis Service", func() {
 		}
 	})
 
-	AfterSuite(func() {
-		regularContext := context.RegularUserContext()
+	SynchronizedAfterSuite(func() {
+		fmt.Println("RUNNING SYNCHRONISED AFTER SUITE OWN CODE FUNC 1")
 
+	}, func() {
+		fmt.Println("RUNNING SYNCHRONISED AFTER SUITE OWN CODE FUNC 2")
 		afterSuiteSteps := []*reporter.Step{
-			reporter.NewStep(
-				"Connect to CloudFoundry",
-				testCF.API(cfTestConfig.ApiEndpoint, cfTestConfig.SkipSSLValidation),
-			),
-			reporter.NewStep(
-				"Log in as admin",
-				testCF.Auth(cfTestConfig.AdminUser, cfTestConfig.AdminPassword),
-			),
-			reporter.NewStep(
-				fmt.Sprintf("Target '%s' org and '%s' space", regularContext.Org, regularContext.Space),
-				testCF.TargetOrgAndSpace(regularContext.Org, regularContext.Space),
-			),
 			reporter.NewStep(
 				"Ensure no service-instances left",
 				testCF.EnsureAllServiceInstancesGone(),
 			),
 			reporter.NewStep(
-				fmt.Sprintf("Delete user '%s'", regularContext.Username),
-				testCF.DeleteUser(regularContext.Username),
-			),
-			reporter.NewStep(
-				fmt.Sprintf("Delete org '%s'", regularContext.Org),
-				testCF.DeleteOrg(regularContext.Org),
+				fmt.Sprintf("Delete org '%s'", cfTestContext.Org),
+				testCF.DeleteOrg(cfTestContext.Org),
 			),
 			reporter.NewStep(
 				"Log out",
@@ -239,8 +209,6 @@ var _ = Describe("Redis Service", func() {
 
 	AssertLifeCycleBehavior := func(planName string) {
 		It(strings.ToUpper(planName)+": create, bind to, write to, read from, unbind, and destroy a service instance", func() {
-			regularContext := context.RegularUserContext()
-
 			var skip bool
 
 			uri := fmt.Sprintf("https://%s.%s", appName, cfTestConfig.AppsDomain)
@@ -259,24 +227,8 @@ var _ = Describe("Redis Service", func() {
 					testCF.BindService(appName, serviceInstanceName),
 				),
 				reporter.NewStep(
-					"Log in as admin",
-					testCF.Auth(cfTestConfig.AdminUser, cfTestConfig.AdminPassword),
-				),
-				reporter.NewStep(
-					fmt.Sprintf("Target '%s' org and '%s' space", regularContext.Org, regularContext.Space),
-					testCF.TargetOrgAndSpace(regularContext.Org, regularContext.Space),
-				),
-				reporter.NewStep(
 					fmt.Sprintf("Create and bind security group '%s' for running smoke tests", securityGroupName),
-					testCF.CreateAndBindSecurityGroup(securityGroupName, appName, regularContext.Org, regularContext.Space),
-				),
-				reporter.NewStep(
-					fmt.Sprintf("Log in as %s", regularContext.Username),
-					testCF.Auth(regularContext.Username, regularContext.Password),
-				),
-				reporter.NewStep(
-					fmt.Sprintf("Target '%s' org and '%s' space", regularContext.Org, regularContext.Space),
-					testCF.TargetOrgAndSpace(regularContext.Org, regularContext.Space),
+					testCF.CreateAndBindSecurityGroup(securityGroupName, appName, cfTestContext.Org, cfTestContext.Space),
 				),
 				reporter.NewStep(
 					"Start the app",

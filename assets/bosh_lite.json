@@ -1,6 +1,7 @@
 {
   "service_name": "p-redis",
   "plan_names": [
+    "dedicated-vm",
     "shared-vm"
   ],
   "retry": {
