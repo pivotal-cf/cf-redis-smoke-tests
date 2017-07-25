@@ -109,7 +109,6 @@ var _ = Describe("Redis Service", func() {
 
 		return rawTestContext
 	}, func(data []byte) {
-		fmt.Println("A random name: ", randomName())
 		err := json.Unmarshal(data, &cfTestContext)
 		Expect(err).NotTo(HaveOccurred())
 	})
@@ -180,11 +179,7 @@ var _ = Describe("Redis Service", func() {
 		}
 	})
 
-	SynchronizedAfterSuite(func() {
-		fmt.Println("RUNNING SYNCHRONISED AFTER SUITE OWN CODE FUNC 1")
-
-	}, func() {
-		fmt.Println("RUNNING SYNCHRONISED AFTER SUITE OWN CODE FUNC 2")
+	SynchronizedAfterSuite(func() {}, func() {
 		afterSuiteSteps := []*reporter.Step{
 			reporter.NewStep(
 				"Ensure no service-instances left",
