@@ -19,7 +19,7 @@ import (
 )
 
 type CFTestContext struct {
-	Org, Space, Username, Password string
+	Org, Space string
 }
 
 var _ = Describe("Redis Service", func() {
@@ -98,10 +98,8 @@ var _ = Describe("Redis Service", func() {
 		}
 
 		cfTestContext = CFTestContext{
-			Org:      regularContext.Org,
-			Space:    regularContext.Space,
-			Username: regularContext.Username,
-			Password: regularContext.Password,
+			Org:   regularContext.Org,
+			Space: regularContext.Space,
 		}
 
 		rawTestContext, err := json.Marshal(cfTestContext)
