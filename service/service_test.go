@@ -2,6 +2,8 @@ package service_test
 
 import (
 	"fmt"
+	"io/ioutil"
+	"os"
 	"strings"
 	"time"
 
@@ -89,6 +91,10 @@ var _ = Describe("Redis Service", func() {
 				fmt.Sprintf("Target '%s' org and '%s' space", regularContext.Org, regularContext.Space),
 				testCF.TargetOrgAndSpace(regularContext.Org, regularContext.Space),
 			),
+			reporter.NewStep(
+				"Log out",
+				testCF.Logout(),
+			),
 		}
 
 		smokeTestReporter.RegisterBeforeSuiteSteps(beforeSuiteSteps)
@@ -109,6 +115,11 @@ var _ = Describe("Redis Service", func() {
 	}, func(data []byte) {
 		err := json.Unmarshal(data, &cfTestContext)
 		Expect(err).NotTo(HaveOccurred())
+
+		// Set $CF_HOME so that cf cli state is not shared between nodes
+		cfHomeDir, err := ioutil.TempDir("", "cf-redis-smoke-tests")
+		Expect(err).NotTo(HaveOccurred())
+		os.Setenv("CF_HOME", cfHomeDir)
 	})
 
 	BeforeEach(func() {
@@ -124,6 +135,10 @@ var _ = Describe("Redis Service", func() {
 		}
 
 		specSteps := []*reporter.Step{
+			reporter.NewStep(
+				"Connect to CloudFoundry",
+				testCF.API(cfTestConfig.ApiEndpoint, cfTestConfig.SkipSSLValidation),
+			),
 			reporter.NewStep(
 				"Log in as admin",
 				testCF.Auth(cfTestConfig.AdminUser, cfTestConfig.AdminPassword),
