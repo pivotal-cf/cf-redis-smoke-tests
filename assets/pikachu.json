@@ -1,0 +1,20 @@
+{
+  "api": "https://api.sys.pikachu.gcp.london.cf-app.com",
+  "apps_domain": "a.pikachu.gcp.london.cf-app.com",
+  "system_domain": "sys.pikachu.gcp.london.cf-app.com",
+  "admin_user": "admin",
+  "admin_password": "n_oBj1SpBMx92cqvRHGf2z1M3Ol5K3Qg",
+  "service_name": "p.redis-ci",
+  "space_name": "redis-smoke-test-space",
+  "org_name": "redis-smoke-test-org",
+  "plan_names": [
+    "cache-small"
+  ],
+  "retry": {
+    "max_attempts": 10,
+    "backoff": "linear",
+    "baseline_interval_milliseconds": 1000
+  },
+  "skip_ssl_validation": true,
+  "create_permissive_security_group": false
+}
