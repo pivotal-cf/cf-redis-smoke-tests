@@ -72,10 +72,6 @@ var _ = Describe("Redis Service", func() {
 				testCF.CreateQuota("redis-smoke-test-quota", createQuotaArgs...),
 			),
 			reporter.NewStep(
-				fmt.Sprintf("Create '%s' org", regularContext.Org),
-				testCF.CreateOrg(regularContext.Org, "redis-smoke-test-quota"),
-			),
-			reporter.NewStep(
 				fmt.Sprintf("Enable service access for '%s' org", regularContext.Org),
 				testCF.EnableServiceAccess(regularContext.Org, redisConfig.ServiceName),
 			),
@@ -198,10 +194,6 @@ var _ = Describe("Redis Service", func() {
 			reporter.NewStep(
 				"Ensure no service-instances left",
 				testCF.EnsureAllServiceInstancesGone(),
-			),
-			reporter.NewStep(
-				fmt.Sprintf("Delete org '%s'", cfTestContext.Org),
-				testCF.DeleteOrg(cfTestContext.Org),
 			),
 			reporter.NewStep(
 				"Log out",
