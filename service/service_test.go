@@ -192,10 +192,6 @@ var _ = Describe("Redis Service", func() {
 	SynchronizedAfterSuite(func() {}, func() {
 		afterSuiteSteps := []*reporter.Step{
 			reporter.NewStep(
-				"Ensure no service-instances left",
-				testCF.EnsureAllServiceInstancesGone(),
-			),
-			reporter.NewStep(
 				"Log out",
 				testCF.Logout(),
 			),
@@ -203,9 +199,7 @@ var _ = Describe("Redis Service", func() {
 
 		smokeTestReporter.RegisterAfterSuiteSteps(afterSuiteSteps)
 
-		for _, task := range afterSuiteSteps {
-			task.Perform()
-		}
+		afterSuiteSteps[0].Perform()
 	})
 
 	AssertLifeCycleBehavior := func(planName string) {
