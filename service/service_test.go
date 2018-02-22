@@ -206,7 +206,7 @@ var _ = Describe("Redis Service", func() {
 		It(strings.ToUpper(planName)+": create, bind to, write to, read from, unbind, and destroy a service instance", func() {
 			var skip bool
 
-			uri := fmt.Sprintf("https://%s.%s", appName, cfTestConfig.AppsDomain)
+			uri := fmt.Sprintf("https://%s.%s", appName, cfTestConfig.SystemDomain)
 			app := redis.NewApp(uri, testCF.ShortTimeout, retryInterval)
 
 			serviceCreateStep := reporter.NewStep(
