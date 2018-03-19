@@ -1,0 +1,8 @@
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/pivotal-cf-experimental/cf-test-helpers"
+
+[prune]
+  go-tests = true
+  unused-packages = true
