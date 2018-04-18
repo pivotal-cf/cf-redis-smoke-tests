@@ -128,7 +128,7 @@ var _ = Describe("Redis Service", func() {
 			"-p", appPath,
 			"-s", "cflinuxfs2",
 			"-d", cfTestConfig.SystemDomain,
-			"-no-start",
+			"--no-start",
 		}
 
 		specSteps := []*reporter.Step{
