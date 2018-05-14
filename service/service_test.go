@@ -40,6 +40,7 @@ var _ = Describe("Redis Service", func() {
 		appName             string
 		planName            string
 		securityGroupName   string
+		serviceKeyName      string
 
 		cfTestContext CFTestContext
 
@@ -122,6 +123,7 @@ var _ = Describe("Redis Service", func() {
 		appName = randomName()
 		serviceInstanceName = randomName()
 		securityGroupName = randomName()
+		serviceKeyName = randomName()
 
 		pushArgs := []string{
 			"-m", "256M",
@@ -163,6 +165,10 @@ var _ = Describe("Redis Service", func() {
 			reporter.NewStep(
 				fmt.Sprintf("Unbind the %q plan instance", planName),
 				testCF.UnbindService(appName, serviceInstanceName),
+			),
+			reporter.NewStep(
+				fmt.Sprintf("Delete the service key %s for the %q plan instance", serviceKeyName, planName),
+				testCF.DeleteServiceKey(serviceInstanceName, serviceKeyName),
 			),
 			reporter.NewStep(
 				fmt.Sprintf("Delete the %q plan instance", planName),
@@ -222,8 +228,12 @@ var _ = Describe("Redis Service", func() {
 					testCF.BindService(appName, serviceInstanceName),
 				),
 				reporter.NewStep(
+					fmt.Sprintf("Create service key for the '%s' plan instance '%s' of Redis", planName, serviceInstanceName),
+					testCF.CreateServiceKey(serviceInstanceName, serviceKeyName),
+				),
+				reporter.NewStep(
 					fmt.Sprintf("Create and bind security group '%s' for running smoke tests", securityGroupName),
-					testCF.CreateAndBindSecurityGroup(securityGroupName, appName, cfTestContext.Org, cfTestContext.Space),
+					testCF.CreateAndBindSecurityGroup(securityGroupName, serviceInstanceName, cfTestContext.Org, cfTestContext.Space),
 				),
 				reporter.NewStep(
 					"Start the app",

@@ -166,11 +166,11 @@ func (cf *CF) CreateSpace(space string) func() {
 }
 
 // CreateSecurityGroup is equivalent to `cf create-security-group {securityGroup} {configPath}`
-func (cf *CF) CreateAndBindSecurityGroup(securityGroup, appName, org, space string) func() {
+func (cf *CF) CreateAndBindSecurityGroup(securityGroup, serviceName, org, space string) func() {
 	return func() {
-		appGuid := cf.getAppGuid(appName)
+		serviceGuid := cf.getServiceInstanceGuid(serviceName)
 
-		host, port := cf.getBindingCredentials(appGuid)
+		host, port := cf.getServiceKeyCredentials(serviceGuid)
 
 		sgFile, err := ioutil.TempFile("", "smoke-test-security-group-")
 		Expect(err).NotTo(HaveOccurred())
@@ -466,15 +466,41 @@ func (cf *CF) Logout() func() {
 	}
 }
 
-func (cf *CF) getAppGuid(appName string) string {
-	session := helpersCF.Cf("app", "--guid", appName)
-	Eventually(session, cf.ShortTimeout).Should(gexec.Exit(0), `{"FailReason": "Failed to retrieve GUID for app"}`)
+func (cf CF) CreateServiceKey(serviceInstanceName, serviceKeyName string) func() {
+	serviceKeyFn := func() *gexec.Session {
+		return helpersCF.Cf("create-service-key", serviceInstanceName, serviceKeyName)
+	}
+
+	return func() {
+		retry.Session(serviceKeyFn).WithSessionTimeout(cf.ShortTimeout).AndMaxRetries(cf.MaxRetries).AndBackoff(cf.RetryBackoff).Until(
+			retry.Succeeds,
+			`{"FailReason": "Failed to create service key for Redis service instance"}`,
+		)
+	}
+}
+
+func (cf CF) DeleteServiceKey(serviceInstanceName, serviceKeyName string) func() {
+	serviceKeyFn := func() *gexec.Session {
+		return helpersCF.Cf("delete-service-key", serviceInstanceName, serviceKeyName)
+	}
+
+	return func() {
+		retry.Session(serviceKeyFn).WithSessionTimeout(cf.ShortTimeout).AndMaxRetries(cf.MaxRetries).AndBackoff(cf.RetryBackoff).Until(
+			retry.Succeeds,
+			`{"FailReason": "Failed to delete service key for Redis service instance"}`,
+		)
+	}
+}
+
+func (cf *CF) getServiceInstanceGuid(serviceName string) string {
+	session := helpersCF.Cf("service", "--guid", serviceName)
+	Eventually(session, cf.ShortTimeout).Should(gexec.Exit(0), `{"FailReason": "Failed to retrieve GUID for service instance"}`)
 
 	return strings.Trim(string(session.Out.Contents()), " \n")
 }
 
-func (cf *CF) getBindingCredentials(appGuid string) (string, int) {
-	session := helpersCF.Cf("curl", fmt.Sprintf("/v2/apps/%s/service_bindings", appGuid))
+func (cf *CF) getServiceKeyCredentials(serviceGuid string) (string, int) {
+	session := helpersCF.Cf("curl", fmt.Sprintf("/v2/service_keys?q=service_instance_guid:%s", serviceGuid))
 	Eventually(session, cf.ShortTimeout).Should(gexec.Exit(0), `{"FailReason": "Failed to retrieve service bindings for app"}`)
 
 	var resp = new(struct {
@@ -489,11 +515,11 @@ func (cf *CF) getBindingCredentials(appGuid string) (string, int) {
 	})
 
 	err := json.NewDecoder(bytes.NewBuffer(session.Out.Contents())).Decode(resp)
-	Expect(err).NotTo(HaveOccurred(), `{"FailReason": "Failed to decode service binding response"}`)
-	Expect(resp.Resources).To(HaveLen(1), `{"FailReason": "Invalid binding response, expected exactly one binding"}`)
+	Expect(err).NotTo(HaveOccurred(), `{"FailReason": "Failed to decode service key response"}`)
+	Expect(resp.Resources).To(HaveLen(1), `{"FailReason": "Invalid service key response, expected exactly one service key"}`)
 
 	host, port := resp.Resources[0].Entity.Credentials.Host, resp.Resources[0].Entity.Credentials.Port
-	Expect(host).NotTo(BeEmpty(), `{"FailReason": "Invalid binding, missing host"}`)
-	Expect(port).NotTo(BeZero(), `{"FailReason": "Invalid binding, missing port"}`)
+	Expect(host).NotTo(BeEmpty(), `{"FailReason": "Invalid service key, missing host"}`)
+	Expect(port).NotTo(BeZero(), `{"FailReason": "Invalid service key, missing port"}`)
 	return host, port
 }
