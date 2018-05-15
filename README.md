@@ -2,7 +2,7 @@
 
 1. Find or create the appropriate environment config file in `assets/`
 
-1. Modify the `.envrc` to point to the config file identified
+1. Modify the `.envrc` to point to the config file identified. Can use a toolsmiths environment cf api credentials
 
 1. Run `direnv allow`
 

@@ -481,7 +481,7 @@ func (cf CF) CreateServiceKey(serviceInstanceName, serviceKeyName string) func()
 
 func (cf CF) DeleteServiceKey(serviceInstanceName, serviceKeyName string) func() {
 	serviceKeyFn := func() *gexec.Session {
-		return helpersCF.Cf("delete-service-key -f", serviceInstanceName, serviceKeyName)
+		return helpersCF.Cf("delete-service-key", "-f", serviceInstanceName, serviceKeyName)
 	}
 
 	return func() {
