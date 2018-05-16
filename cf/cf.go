@@ -305,9 +305,9 @@ func (cf *CF) CreateService(serviceName, planName, instanceName string, skip *bo
 			// legacy release
 			regexp.MustCompile("instance limit for this service has been reached").Match(session.Out.Contents()) ||
 				// ODB plan quota
-				regexp.MustCompile("The quota for this service plan has been exceeded.").Match(session.Out.Contents()) ||
+				regexp.MustCompile("plan instance limit exceeded for service").Match(session.Out.Contents()) ||
 				// ODB global quota
-				regexp.MustCompile("The quota for this service has been exceeded.").Match(session.Out.Contents()))
+				regexp.MustCompile("global instance limit exceeded for service").Match(session.Out.Contents()))
 		if failureBecauseQuotaReached {
 			fmt.Printf("No Plan Instances available for testing %s plan\n", planName)
 			*skip = true
