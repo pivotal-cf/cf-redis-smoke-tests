@@ -129,6 +129,7 @@ var _ = Describe("Redis Service", func() {
 			"-m", "256M",
 			"-p", appPath,
 			"-d", cfTestConfig.SystemDomain,
+			"-b", "ruby_buildpack",
 			"--no-start",
 		}
 
