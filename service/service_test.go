@@ -49,6 +49,7 @@ var _ = Describe("Redis Service", func() {
 
 	SynchronizedBeforeSuite(func() []byte {
 		context = services.NewContext(cfTestConfig, "redis-test")
+		context.Setup()
 
 		createQuotaArgs := []string{
 			"-m", "10G",
