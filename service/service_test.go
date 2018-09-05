@@ -39,7 +39,6 @@ var _ = Describe("Redis Service", func() {
 		serviceInstanceName string
 		appName             string
 		planName            string
-		securityGroupName   string
 		serviceKeyName      string
 
 		cfTestContext CFTestContext
@@ -51,56 +50,7 @@ var _ = Describe("Redis Service", func() {
 		context = services.NewContext(cfTestConfig, "redis-test")
 		context.Setup()
 
-		createQuotaArgs := []string{
-			"-m", "10G",
-			"-r", "1000",
-			"-s", "100",
-			"--allow-paid-service-plans",
-		}
-
 		regularContext := context.RegularUserContext()
-
-		beforeSuiteSteps := []*reporter.Step{
-			reporter.NewStep(
-				"Connect to CloudFoundry",
-				testCF.API(cfTestConfig.ApiEndpoint, cfTestConfig.SkipSSLValidation),
-			),
-			reporter.NewStep(
-				"Log in as admin",
-				testCF.Auth(cfTestConfig.AdminUser, cfTestConfig.AdminPassword),
-			),
-			reporter.NewStep(
-				"Create 'redis-smoke-tests' quota",
-				testCF.CreateQuota("redis-smoke-test-quota", createQuotaArgs...),
-			),
-			reporter.NewStep(
-				fmt.Sprintf("Enable service access for '%s' org", regularContext.Org),
-				testCF.EnableServiceAccess(regularContext.Org, redisConfig.ServiceName),
-			),
-			reporter.NewStep(
-				fmt.Sprintf("Target '%s' org", regularContext.Org),
-				testCF.TargetOrg(regularContext.Org),
-			),
-			reporter.NewStep(
-				fmt.Sprintf("Create '%s' space", regularContext.Space),
-				testCF.CreateSpace(regularContext.Space),
-			),
-			reporter.NewStep(
-				fmt.Sprintf("Target '%s' org and '%s' space", regularContext.Org, regularContext.Space),
-				testCF.TargetOrgAndSpace(regularContext.Org, regularContext.Space),
-			),
-			reporter.NewStep(
-				"Log out",
-				testCF.Logout(),
-			),
-		}
-
-		smokeTestReporter.RegisterBeforeSuiteSteps(beforeSuiteSteps)
-
-		for _, task := range beforeSuiteSteps {
-			task.Perform()
-		}
-
 		cfTestContext = CFTestContext{
 			Org:   regularContext.Org,
 			Space: regularContext.Space,
@@ -123,7 +73,6 @@ var _ = Describe("Redis Service", func() {
 	BeforeEach(func() {
 		appName = randomName()
 		serviceInstanceName = randomName()
-		securityGroupName = randomName()
 		serviceKeyName = randomName()
 
 		pushArgs := []string{
@@ -142,6 +91,10 @@ var _ = Describe("Redis Service", func() {
 			reporter.NewStep(
 				"Log in as admin",
 				testCF.Auth(cfTestConfig.AdminUser, cfTestConfig.AdminPassword),
+			),
+			reporter.NewStep(
+				fmt.Sprintf("Enable service access for '%s' org", cfTestContext.Org),
+				testCF.EnableServiceAccess(cfTestContext.Org, redisConfig.ServiceName),
 			),
 			reporter.NewStep(
 				fmt.Sprintf("Target '%s' org and '%s' space", cfTestContext.Org, cfTestContext.Space),
@@ -195,8 +148,8 @@ var _ = Describe("Redis Service", func() {
 	SynchronizedAfterSuite(func() {}, func() {
 		afterSuiteSteps := []*reporter.Step{
 			reporter.NewStep(
-				"Log out",
-				testCF.Logout(),
+				"Context Teardown",
+				context.Teardown,
 			),
 		}
 
