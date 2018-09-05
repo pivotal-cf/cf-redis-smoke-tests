@@ -93,6 +93,10 @@ var _ = Describe("Redis Service", func() {
 				testCF.Auth(cfTestConfig.AdminUser, cfTestConfig.AdminPassword),
 			),
 			reporter.NewStep(
+				fmt.Sprintf("Share domain access for '%s' domain", cfTestConfig.SystemDomain),
+				smokeTestCF.ShareDomain(cfTestContext.Org, cfTestConfig.SystemDomain),
+			),
+			reporter.NewStep(
 				fmt.Sprintf("Enable service access for '%s' org", cfTestContext.Org),
 				testCF.EnableServiceAccess(cfTestContext.Org, redisConfig.ServiceName),
 			),
@@ -135,6 +139,10 @@ var _ = Describe("Redis Service", func() {
 			reporter.NewStep(
 				"Delete the app",
 				testCF.Delete(appName),
+			),
+			reporter.NewStep(
+				fmt.Sprintf("Unshare domain access for '%s' domain", cfTestConfig.SystemDomain),
+				smokeTestCF.UnshareDomain(cfTestContext.Org, cfTestConfig.SystemDomain),
 			),
 		}
 
