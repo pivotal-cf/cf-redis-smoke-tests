@@ -175,7 +175,7 @@ func (cf *CF) CreateAndBindSecurityGroup(securityGroup, serviceName, org, space 
 
 		session := runner.Run("dig", "+short", host)
 		Eventually(session).Should(gexec.Exit(0))
-		ip := string(session.Out.Contents())
+		ip := strings.TrimSpace(string(session.Out.Contents()))
 
 		destination := ""
 		if ip != "" {
