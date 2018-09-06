@@ -232,6 +232,10 @@ var _ = Describe("Redis Service", func() {
 					testCF.CreateServiceKey(serviceInstanceName, serviceKeyName),
 				),
 				reporter.NewStep(
+					fmt.Sprintf("Create and bind security group '%s' for running smoke tests", securityGroupName),
+					testCF.CreateAndBindSecurityGroup(securityGroupName, serviceInstanceName, cfTestContext.Org, cfTestContext.Space),
+				),
+				reporter.NewStep(
 					"Start the app",
 					testCF.Start(appName),
 				),
