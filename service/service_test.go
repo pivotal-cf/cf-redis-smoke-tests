@@ -182,6 +182,10 @@ var _ = Describe("Redis Service", func() {
 				"Delete the app",
 				testCF.Delete(appName),
 			),
+			reporter.NewStep(
+				fmt.Sprintf("Delete security group '%s'", securityGroupName),
+				testCF.DeleteSecurityGroup(securityGroupName),
+			),
 		}
 
 		smokeTestReporter.RegisterSpecSteps(specSteps)
