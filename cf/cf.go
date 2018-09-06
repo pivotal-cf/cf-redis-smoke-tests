@@ -102,34 +102,6 @@ func (cf *CF) CreateOrg(org, quota string) func() {
 	}
 }
 
-// ShareDomain is equivalent to `cf share-private-domain {org} {domain}`
-func (cf *CF) ShareDomain(org, domain string) func() {
-	shareDomainFn := func() *gexec.Session {
-		return helpersCF.Cf("share-private-domain ", org, domain)
-	}
-
-	return func() {
-		retry.Session(shareDomainFn).WithSessionTimeout(cf.ShortTimeout).AndMaxRetries(cf.MaxRetries).AndBackoff(cf.RetryBackoff).Until(
-			retry.Succeeds,
-			`{"FailReason": "Failed to share domain"}`,
-		)
-	}
-}
-
-// UnshareDomain is equivalent to `cf unshare-private-domain {org} {domain}`
-func (cf *CF) UnshareDomain(org, domain string) func() {
-	unshareDomainFn := func() *gexec.Session {
-		return helpersCF.Cf("unshare-private-domain ", org, domain)
-	}
-
-	return func() {
-		retry.Session(unshareDomainFn).WithSessionTimeout(cf.ShortTimeout).AndMaxRetries(cf.MaxRetries).AndBackoff(cf.RetryBackoff).Until(
-			retry.Succeeds,
-			`{"FailReason": "Failed to unshare domain"}`,
-		)
-	}
-}
-
 // EnableServiceAccess is equivalent to `cf enable-service-access -o {org} {service-offering}`
 // In order to run enable-service-access idempotently we disable-service-access before.
 func (cf *CF) EnableServiceAccess(org, service string) func() {
