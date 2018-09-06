@@ -13,6 +13,7 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gexec"
 	helpersCF "github.com/pivotal-cf-experimental/cf-test-helpers/cf"
+	"github.com/pivotal-cf-experimental/cf-test-helpers/runner"
 	"github.com/pivotal-cf/cf-redis-smoke-tests/retry"
 )
 
@@ -172,6 +173,17 @@ func (cf *CF) CreateAndBindSecurityGroup(securityGroup, serviceName, org, space 
 
 		host, port := cf.getServiceKeyCredentials(serviceGuid)
 
+		session := runner.Run("dig", "+short", host)
+		Eventually(session).Should(gexec.Exit(0))
+		ip := string(session.Out.Contents())
+
+		destination := ""
+		if ip != "" {
+			destination = ip
+		} else {
+			destination = host
+		}
+
 		sgFile, err := ioutil.TempFile("", "smoke-test-security-group-")
 		Expect(err).NotTo(HaveOccurred())
 		defer sgFile.Close()
@@ -182,7 +194,7 @@ func (cf *CF) CreateAndBindSecurityGroup(securityGroup, serviceName, org, space 
 			Destination string `json:"destination"`
 			Ports       string `json:"ports"`
 		}{
-			{"tcp", host, fmt.Sprintf("%d", port)},
+			{"tcp", destination, fmt.Sprintf("%d", port)},
 		}
 
 		err = json.NewEncoder(sgFile).Encode(sgs)
