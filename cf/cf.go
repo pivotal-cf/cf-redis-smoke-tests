@@ -174,7 +174,7 @@ func (cf *CF) CreateAndBindSecurityGroup(securityGroup, serviceName, org, space 
 		host, port := cf.getServiceKeyCredentials(serviceGuid)
 
 		session := runner.Run("dig", "+short", host)
-		Eventually(session).Should(gexec.Exit(0))
+		Eventually(session, 10*time.Second).Should(gexec.Exit(0))
 		ip := strings.TrimSpace(string(session.Out.Contents()))
 
 		destination := ""
