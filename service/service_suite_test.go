@@ -96,6 +96,8 @@ func TestService(t *testing.T) {
 	SynchronizedBeforeSuite(func() []byte {
 		wfh = workflowhelpers.NewTestSuiteSetup(&cfTestConfig)
 		wfh.Setup()
+
+		return []byte{}
 	}, func(data []byte) {})
 
 	SynchronizedAfterSuite(func() {}, func() {
