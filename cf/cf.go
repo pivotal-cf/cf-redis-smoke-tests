@@ -10,10 +10,10 @@ import (
 	"strings"
 	"time"
 
+	helpersCF "github.com/cloudfoundry-incubator/cf-test-helpers/cf"
+	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gexec"
-	helpersCF "github.com/pivotal-cf-experimental/cf-test-helpers/cf"
-	"github.com/pivotal-cf-experimental/cf-test-helpers/runner"
 	"github.com/pivotal-cf/cf-redis-smoke-tests/retry"
 )
 
@@ -173,7 +173,7 @@ func (cf *CF) CreateAndBindSecurityGroup(securityGroup, serviceName, org, space 
 
 		host, port := cf.getServiceKeyCredentials(serviceGuid)
 
-		session := runner.Run("dig", "+short", host)
+		session := helpers.Run("dig", "+short", host)
 		Eventually(session, 10*time.Second).Should(gexec.Exit(0))
 		ip := strings.TrimSpace(string(session.Out.Contents()))
 

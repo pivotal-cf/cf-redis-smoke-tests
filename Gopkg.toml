@@ -1,7 +1,6 @@
-
 [[constraint]]
   branch = "master"
-  name = "github.com/pivotal-cf-experimental/cf-test-helpers"
+  name = "github.com/cloudfoundry-incubator/cf-test-helpers"
 
 [prune]
   go-tests = true

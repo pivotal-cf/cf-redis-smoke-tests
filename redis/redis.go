@@ -5,8 +5,8 @@ import (
 	"regexp"
 	"time"
 
+	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 	"github.com/onsi/gomega/gexec"
-	"github.com/pivotal-cf-experimental/cf-test-helpers/runner"
 	"github.com/pivotal-cf/cf-redis-smoke-tests/retry"
 )
 
@@ -37,7 +37,7 @@ func (app *App) IsRunning() func() {
 
 		curlFn := func() *gexec.Session {
 			fmt.Println("Checking that the app is responding at url: ", pingURI)
-			return runner.Curl(pingURI, "-k")
+			return helpers.Curl(pingURI, "-k")
 		}
 
 		retry.Session(curlFn).WithSessionTimeout(app.timeout).AndBackoff(app.retryBackoff).Until(
@@ -51,7 +51,7 @@ func (app *App) Write(key, value string) func() {
 	return func() {
 		curlFn := func() *gexec.Session {
 			fmt.Println("Posting to url: ", app.keyURI(key))
-			return runner.Curl("-d", fmt.Sprintf("data=%s", value), "-X", "PUT", app.keyURI(key), "-k")
+			return helpers.Curl("-d", fmt.Sprintf("data=%s", value), "-X", "PUT", app.keyURI(key), "-k")
 		}
 
 		retry.Session(curlFn).WithSessionTimeout(app.timeout).AndBackoff(app.retryBackoff).Until(
@@ -66,7 +66,7 @@ func (app *App) ReadAssert(key, expectedValue string) func() {
 	return func() {
 		curlFn := func() *gexec.Session {
 			fmt.Printf("\nGetting from url: %s\n", app.keyURI(key))
-			return runner.Curl(app.keyURI(key), "-k")
+			return helpers.Curl(app.keyURI(key), "-k")
 		}
 
 		retry.Session(curlFn).WithSessionTimeout(app.timeout).AndBackoff(app.retryBackoff).Until(

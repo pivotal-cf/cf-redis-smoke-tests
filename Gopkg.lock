@@ -2,6 +2,24 @@
 
 
 [[projects]]
+  branch = "master"
+  digest = "1:d042616e36cd72a0c82621bdd07b662ea00942968b88e4f9a3378defb5dff000"
+  name = "github.com/cloudfoundry-incubator/cf-test-helpers"
+  packages = [
+    "cf",
+    "commandreporter",
+    "commandstarter",
+    "config",
+    "helpers",
+    "helpers/internal",
+    "internal",
+    "silentcommandstarter",
+  ]
+  pruneopts = "UT"
+  revision = "c64eebf0bb9f249c1c85de97dc9ea7305250003a"
+
+[[projects]]
+  digest = "1:f378e8dd67d1fd0e68acac151b900f3c24ec254435c271df8c918152dfdddf93"
   name = "github.com/onsi/ginkgo"
   packages = [
     ".",
@@ -21,11 +39,13 @@
     "reporters/stenographer",
     "reporters/stenographer/support/go-colorable",
     "reporters/stenographer/support/go-isatty",
-    "types"
+    "types",
   ]
+  pruneopts = "UT"
   revision = "8382b23d18dbaaff8e5f7e83784c53ebb8ec2f47"
 
 [[projects]]
+  digest = "1:6f2c29f30fe3706d3b38fa895a1e37eadeb01ed0771b1760635f5fc88e14507d"
   name = "github.com/onsi/gomega"
   packages = [
     ".",
@@ -41,39 +61,46 @@
     "matchers/support/goraph/edge",
     "matchers/support/goraph/node",
     "matchers/support/goraph/util",
-    "types"
+    "types",
   ]
+  pruneopts = "UT"
   revision = "c463cd2a8578290d4be7a25cba69de81cf35785e"
 
 [[projects]]
+  digest = "1:361de06aa7ae272616cbe71c3994a654cc6316324e30998e650f7765b20c5b33"
   name = "github.com/pborman/uuid"
   packages = ["."]
+  pruneopts = "UT"
   revision = "1b00554d822231195d1babd97ff4a781231955c9"
 
 [[projects]]
-  branch = "master"
-  name = "github.com/pivotal-cf-experimental/cf-test-helpers"
-  packages = [
-    "cf",
-    "runner",
-    "services"
-  ]
-  revision = "e56b6ec41da995a7662bb9c6f80219a6322baeb4"
-
-[[projects]]
+  digest = "1:032c293d33e54b610b65d275aad651493d242470b608dd222763c7f59afb947f"
   name = "golang.org/x/sys"
   packages = ["unix"]
+  pruneopts = "UT"
   revision = "075e574b89e4c2d22f2286a7e2b919519c6f3547"
 
 [[projects]]
   branch = "v2"
+  digest = "1:a795b576298faaa0453e4e3ab67420c70e524f9e365ed8fd30fd504eca807aff"
   name = "gopkg.in/yaml.v2"
   packages = ["."]
+  pruneopts = "UT"
   revision = "a3f3340b5840cee44f372bddb5880fcbc419b46a"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "42965a7789416fa869c76807b4bf52788431cbe45c818a8f5123181a703380ae"
+  input-imports = [
+    "github.com/cloudfoundry-incubator/cf-test-helpers/cf",
+    "github.com/cloudfoundry-incubator/cf-test-helpers/config",
+    "github.com/cloudfoundry-incubator/cf-test-helpers/helpers",
+    "github.com/onsi/ginkgo",
+    "github.com/onsi/ginkgo/config",
+    "github.com/onsi/ginkgo/types",
+    "github.com/onsi/gomega",
+    "github.com/onsi/gomega/gexec",
+    "github.com/pborman/uuid",
+  ]
   solver-name = "gps-cdcl"
   solver-version = 1

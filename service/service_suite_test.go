@@ -7,9 +7,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/cloudfoundry-incubator/cf-test-helpers/config"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/pivotal-cf-experimental/cf-test-helpers/services"
 
 	"github.com/pivotal-cf/cf-redis-smoke-tests/retry"
 	"github.com/pivotal-cf/cf-redis-smoke-tests/service/reporter"
@@ -46,14 +46,14 @@ type redisTestConfig struct {
 	Retry       retryConfig `json:"retry"`
 }
 
-func loadCFTestConfig(path string) services.Config {
-	config := services.Config{}
+func loadCFTestConfig(path string) config.Config {
+	config := config.Config{}
 
-	if err := services.LoadConfig(path, &config); err != nil {
+	if err := config.LoadConfig(path, &config); err != nil {
 		panic(err)
 	}
 
-	if err := services.ValidateConfig(&config); err != nil {
+	if err := config.ValidateConfig(&config); err != nil {
 		panic(err)
 	}
 
@@ -92,6 +92,15 @@ func TestService(t *testing.T) {
 	reporter := []Reporter{
 		Reporter(smokeTestReporter),
 	}
+
+	SynchronizedBeforeSuite(func() []byte {
+		wfh = workflowhelpers.NewTestSuiteSetup(&cfTestConfig)
+		wfh.Setup()
+	}, func(data []byte) {})
+
+	SynchronizedAfterSuite(func() {}, func() {
+		wfh.Teardown()
+	})
 
 	RegisterFailHandler(Fail)
 	RunSpecsWithDefaultAndCustomReporters(t, "P-Redis Smoke Tests", reporter)

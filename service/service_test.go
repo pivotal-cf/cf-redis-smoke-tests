@@ -2,8 +2,6 @@ package service_test
 
 import (
 	"fmt"
-	"io/ioutil"
-	"os"
 	"strings"
 	"time"
 
@@ -11,10 +9,7 @@ import (
 	"github.com/pivotal-cf/cf-redis-smoke-tests/redis"
 	"github.com/pivotal-cf/cf-redis-smoke-tests/service/reporter"
 
-	"github.com/pivotal-cf-experimental/cf-test-helpers/services"
 	smokeTestCF "github.com/pivotal-cf/cf-redis-smoke-tests/cf"
-
-	"encoding/json"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -44,80 +39,8 @@ var _ = Describe("Redis Service", func() {
 
 		cfTestContext CFTestContext
 
-		context services.Context
+		wfh *workflowhelpers.ReproducibleTestSuiteSetup
 	)
-
-	SynchronizedBeforeSuite(func() []byte {
-		context = services.NewContext(cfTestConfig, "redis-test")
-
-		createQuotaArgs := []string{
-			"-m", "10G",
-			"-r", "1000",
-			"-s", "100",
-			"--allow-paid-service-plans",
-		}
-
-		regularContext := context.RegularUserContext()
-
-		beforeSuiteSteps := []*reporter.Step{
-			reporter.NewStep(
-				"Connect to CloudFoundry",
-				testCF.API(cfTestConfig.ApiEndpoint, cfTestConfig.SkipSSLValidation),
-			),
-			reporter.NewStep(
-				"Log in as admin",
-				testCF.Auth(cfTestConfig.AdminUser, cfTestConfig.AdminPassword),
-			),
-			reporter.NewStep(
-				"Create 'redis-smoke-tests' quota",
-				testCF.CreateQuota("redis-smoke-test-quota", createQuotaArgs...),
-			),
-			reporter.NewStep(
-				fmt.Sprintf("Enable service access for '%s' org", regularContext.Org),
-				testCF.EnableServiceAccess(regularContext.Org, redisConfig.ServiceName),
-			),
-			reporter.NewStep(
-				fmt.Sprintf("Target '%s' org", regularContext.Org),
-				testCF.TargetOrg(regularContext.Org),
-			),
-			reporter.NewStep(
-				fmt.Sprintf("Create '%s' space", regularContext.Space),
-				testCF.CreateSpace(regularContext.Space),
-			),
-			reporter.NewStep(
-				fmt.Sprintf("Target '%s' org and '%s' space", regularContext.Org, regularContext.Space),
-				testCF.TargetOrgAndSpace(regularContext.Org, regularContext.Space),
-			),
-			reporter.NewStep(
-				"Log out",
-				testCF.Logout(),
-			),
-		}
-
-		smokeTestReporter.RegisterBeforeSuiteSteps(beforeSuiteSteps)
-
-		for _, task := range beforeSuiteSteps {
-			task.Perform()
-		}
-
-		cfTestContext = CFTestContext{
-			Org:   regularContext.Org,
-			Space: regularContext.Space,
-		}
-
-		rawTestContext, err := json.Marshal(cfTestContext)
-		Expect(err).NotTo(HaveOccurred())
-
-		return rawTestContext
-	}, func(data []byte) {
-		err := json.Unmarshal(data, &cfTestContext)
-		Expect(err).NotTo(HaveOccurred())
-
-		// Set $CF_HOME so that cf cli state is not shared between nodes
-		cfHomeDir, err := ioutil.TempDir("", "cf-redis-smoke-tests")
-		Expect(err).NotTo(HaveOccurred())
-		os.Setenv("CF_HOME", cfHomeDir)
-	})
 
 	BeforeEach(func() {
 		appName = randomName()
@@ -182,10 +105,6 @@ var _ = Describe("Redis Service", func() {
 				"Delete the app",
 				testCF.Delete(appName),
 			),
-			reporter.NewStep(
-				fmt.Sprintf("Delete security group '%s'", securityGroupName),
-				testCF.DeleteSecurityGroup(securityGroupName),
-			),
 		}
 
 		smokeTestReporter.RegisterSpecSteps(specSteps)
@@ -193,19 +112,6 @@ var _ = Describe("Redis Service", func() {
 		for _, task := range specSteps {
 			task.Perform()
 		}
-	})
-
-	SynchronizedAfterSuite(func() {}, func() {
-		afterSuiteSteps := []*reporter.Step{
-			reporter.NewStep(
-				"Log out",
-				testCF.Logout(),
-			),
-		}
-
-		smokeTestReporter.RegisterAfterSuiteSteps(afterSuiteSteps)
-
-		afterSuiteSteps[0].Perform()
 	})
 
 	AssertLifeCycleBehavior := func(planName string) {
