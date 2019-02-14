@@ -37,7 +37,7 @@ func (app *App) IsRunning() func() {
 
 		curlFn := func() *gexec.Session {
 			fmt.Println("Checking that the app is responding at url: ", pingURI)
-			return helpers.Curl(pingURI, "-k")
+			return helpers.CurlSkipSSL(true, pingURI)
 		}
 
 		retry.Session(curlFn).WithSessionTimeout(app.timeout).AndBackoff(app.retryBackoff).Until(
@@ -51,7 +51,7 @@ func (app *App) Write(key, value string) func() {
 	return func() {
 		curlFn := func() *gexec.Session {
 			fmt.Println("Posting to url: ", app.keyURI(key))
-			return helpers.Curl("-d", fmt.Sprintf("data=%s", value), "-X", "PUT", app.keyURI(key), "-k")
+			return helpers.CurlSkipSSL(true, "-d", fmt.Sprintf("data=%s", value), "-X", "PUT", app.keyURI(key))
 		}
 
 		retry.Session(curlFn).WithSessionTimeout(app.timeout).AndBackoff(app.retryBackoff).Until(
@@ -66,7 +66,7 @@ func (app *App) ReadAssert(key, expectedValue string) func() {
 	return func() {
 		curlFn := func() *gexec.Session {
 			fmt.Printf("\nGetting from url: %s\n", app.keyURI(key))
-			return helpers.Curl(app.keyURI(key), "-k")
+			return helpers.CurlSkipSSL(true, app.keyURI(key))
 		}
 
 		retry.Session(curlFn).WithSessionTimeout(app.timeout).AndBackoff(app.retryBackoff).Until(
