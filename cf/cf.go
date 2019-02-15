@@ -59,6 +59,20 @@ func (cf *CF) Auth(user, password string) func() {
 	}
 }
 
+// Auth is equivalent to `cf auth {client} {client-secret} --client-credentials`
+func (cf *CF) AuthClient(client, clientSecret string) func() {
+	authFn := func() *gexec.Session {
+		return helpersCF.Cf("auth", client, clientSecret, "--client-credentials")
+	}
+
+	return func() {
+		retry.Session(authFn).WithSessionTimeout(cf.ShortTimeout).AndMaxRetries(cf.MaxRetries).AndBackoff(cf.RetryBackoff).Until(
+			retry.Succeeds,
+			"{\"FailReason\": \"Failed to `cf auth` with target Cloud Foundry\"}",
+		)
+	}
+}
+
 // CreateQuota is equivalent to `cf create-quota {name} [args...]`
 func (cf *CF) CreateQuota(name string, args ...string) func() {
 	cfArgs := []string{"create-quota", name}
