@@ -77,8 +77,9 @@ func loadRedisTestConfig(path string) redisTestConfig {
 
 var (
 	configPath   = os.Getenv("CONFIG_PATH")
-	cfTestConfig = loadCFTestConfig(configPath)
-	redisConfig  = loadRedisTestConfig(configPath)
+
+	cfTestConfig config.Config
+	redisConfig  redisTestConfig
 
 	smokeTestReporter *reporter.SmokeTestReport
 
@@ -93,6 +94,9 @@ func TestService(t *testing.T) {
 	}
 
 	SynchronizedBeforeSuite(func() []byte {
+		cfTestConfig = loadCFTestConfig(configPath)
+		redisConfig  = loadRedisTestConfig(configPath)
+
 		wfh = workflowhelpers.NewTestSuiteSetup(&cfTestConfig)
 		wfh.Setup()
 
