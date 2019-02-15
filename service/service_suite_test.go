@@ -48,11 +48,13 @@ type redisTestConfig struct {
 }
 
 func loadCFTestConfig(path string) config.Config {
-	cfTestConfig := config.Config{}
+	file, err := os.Open(path)
+	Expect(err).NotTo(HaveOccurred())
+	defer file.Close()
 
-	if err := config.Load(path, &cfTestConfig); err != nil {
-		Expect(err).NotTo(HaveOccurred())
-	}
+	cfTestConfig := config.Config{}
+	err = json.NewDecoder(file).Decode(&cfTestConfig)
+	Expect(err).NotTo(HaveOccurred())
 
 	cfTestConfig.TimeoutScale = 3
 
@@ -61,16 +63,13 @@ func loadCFTestConfig(path string) config.Config {
 
 func loadRedisTestConfig(path string) redisTestConfig {
 	file, err := os.Open(path)
-	if err != nil {
-		Expect(err).NotTo(HaveOccurred())
-	}
+	Expect(err).NotTo(HaveOccurred())
 
 	defer file.Close()
 
 	testConfig := redisTestConfig{}
-	if err := json.NewDecoder(file).Decode(&testConfig); err != nil {
-		Expect(err).NotTo(HaveOccurred())
-	}
+	err = json.NewDecoder(file).Decode(&testConfig)
+	Expect(err).NotTo(HaveOccurred())
 
 	return testConfig
 }
