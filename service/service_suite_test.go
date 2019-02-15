@@ -2,6 +2,7 @@ package service_test
 
 import (
 	"encoding/json"
+	"github.com/cloudfoundry-incubator/cf-test-helpers/workflowhelpers"
 	"os"
 	"strings"
 	"testing"
@@ -24,9 +25,9 @@ type retryConfig struct {
 func (rc retryConfig) Backoff() retry.Backoff {
 	baseline := time.Duration(rc.BaselineMilliseconds) * time.Millisecond
 
-	algo := strings.ToLower(rc.BackoffAlgorithm)
+	algorithm := strings.ToLower(rc.BackoffAlgorithm)
 
-	switch algo {
+	switch algorithm {
 	case "linear":
 		return retry.Linear(baseline)
 	case "exponential":
@@ -47,35 +48,31 @@ type redisTestConfig struct {
 }
 
 func loadCFTestConfig(path string) config.Config {
-	config := config.Config{}
+	cfTestConfig := config.Config{}
 
-	if err := config.LoadConfig(path, &config); err != nil {
-		panic(err)
+	if err := config.Load(path, &cfTestConfig); err != nil {
+		Expect(err).NotTo(HaveOccurred())
 	}
 
-	if err := config.ValidateConfig(&config); err != nil {
-		panic(err)
-	}
+	cfTestConfig.TimeoutScale = 3
 
-	config.TimeoutScale = 3
-
-	return config
+	return cfTestConfig
 }
 
 func loadRedisTestConfig(path string) redisTestConfig {
 	file, err := os.Open(path)
 	if err != nil {
-		panic(err)
+		Expect(err).NotTo(HaveOccurred())
 	}
 
 	defer file.Close()
 
-	config := redisTestConfig{}
-	if err := json.NewDecoder(file).Decode(&config); err != nil {
-		panic(err)
+	testConfig := redisTestConfig{}
+	if err := json.NewDecoder(file).Decode(&testConfig); err != nil {
+		Expect(err).NotTo(HaveOccurred())
 	}
 
-	return config
+	return testConfig
 }
 
 var (
@@ -84,6 +81,8 @@ var (
 	redisConfig  = loadRedisTestConfig(configPath)
 
 	smokeTestReporter *reporter.SmokeTestReport
+
+	wfh *workflowhelpers.ReproducibleTestSuiteSetup
 )
 
 func TestService(t *testing.T) {
