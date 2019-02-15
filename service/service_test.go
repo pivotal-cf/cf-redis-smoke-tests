@@ -60,7 +60,7 @@ var _ = Describe("Redis Service", func() {
 			),
 			reporter.NewStep(
 				"Log in as admin",
-				testCF.AuthClient(cfTestConfig.AdminUser, cfTestConfig.AdminPassword),
+				testCF.AuthClient(cfTestConfig.AdminClient, cfTestConfig.AdminClientSecret),
 			),
 			reporter.NewStep(
 				fmt.Sprintf("Target '%s' org and '%s' space", cfTestContext.Org, cfTestContext.Space),
