@@ -53,15 +53,25 @@ var _ = Describe("Redis Service", func() {
 			"--no-start",
 		}
 
+		var loginStep *reporter.Step
+		if cfTestConfig.AdminClient != "" && cfTestConfig.AdminClientSecret != ""{
+			loginStep = reporter.NewStep(
+				"Log in as admin client",
+				testCF.AuthClient(cfTestConfig.AdminClient, cfTestConfig.AdminClientSecret),
+			)
+		} else {
+			loginStep = reporter.NewStep(
+				"Log in as admin user",
+				testCF.Auth(cfTestConfig.AdminUser, cfTestConfig.AdminPassword),
+			)
+		}
+
 		specSteps := []*reporter.Step{
 			reporter.NewStep(
 				"Connect to CloudFoundry",
 				testCF.API(cfTestConfig.ApiEndpoint, cfTestConfig.SkipSSLValidation),
 			),
-			reporter.NewStep(
-				"Log in as admin",
-				testCF.AuthClient(cfTestConfig.AdminClient, cfTestConfig.AdminClientSecret),
-			),
+			loginStep,
 			reporter.NewStep(
 				fmt.Sprintf("Target '%s' org and '%s' space", cfTestContext.Org, cfTestContext.Space),
 				testCF.TargetOrgAndSpace(cfTestContext.Org, cfTestContext.Space),
