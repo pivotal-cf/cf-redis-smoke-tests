@@ -42,23 +42,11 @@ func (rc retryConfig) MaxRetries() int {
 }
 
 type redisTestConfig struct {
+	config.Config
+
 	ServiceName string      `json:"service_name"`
 	PlanNames   []string    `json:"plan_names"`
 	Retry       retryConfig `json:"retry"`
-}
-
-func loadCFTestConfig(path string) config.Config {
-	file, err := os.Open(path)
-	Expect(err).NotTo(HaveOccurred())
-	defer file.Close()
-
-	cfTestConfig := config.Config{}
-	err = json.NewDecoder(file).Decode(&cfTestConfig)
-	Expect(err).NotTo(HaveOccurred())
-
-	cfTestConfig.TimeoutScale = 3
-
-	return cfTestConfig
 }
 
 func loadRedisTestConfig(path string) redisTestConfig {
@@ -71,13 +59,14 @@ func loadRedisTestConfig(path string) redisTestConfig {
 	err = json.NewDecoder(file).Decode(&testConfig)
 	Expect(err).NotTo(HaveOccurred())
 
+	testConfig.Config.TimeoutScale = 3
+
 	return testConfig
 }
 
 var (
 	configPath   = os.Getenv("CONFIG_PATH")
 
-	cfTestConfig config.Config
 	redisConfig  redisTestConfig
 
 	smokeTestReporter *reporter.SmokeTestReport
@@ -93,10 +82,9 @@ func TestService(t *testing.T) {
 	}
 
 	SynchronizedBeforeSuite(func() []byte {
-		cfTestConfig = loadCFTestConfig(configPath)
 		redisConfig  = loadRedisTestConfig(configPath)
 
-		wfh = workflowhelpers.NewTestSuiteSetup(&cfTestConfig)
+		wfh = workflowhelpers.NewTestSuiteSetup(&redisConfig.Config)
 		wfh.Setup()
 
 		return []byte{}
