@@ -2,13 +2,13 @@ package service_test
 
 import (
 	"encoding/json"
-	"github.com/cloudfoundry-incubator/cf-test-helpers/workflowhelpers"
 	"os"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/config"
+	"github.com/cloudfoundry-incubator/cf-test-helpers/workflowhelpers"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
@@ -51,13 +51,17 @@ type redisTestConfig struct {
 
 func loadRedisTestConfig(path string) redisTestConfig {
 	file, err := os.Open(path)
-	Expect(err).NotTo(HaveOccurred())
+	if err != nil {
+		panic(err)
+	}
 
 	defer file.Close()
 
 	testConfig := redisTestConfig{}
 	err = json.NewDecoder(file).Decode(&testConfig)
-	Expect(err).NotTo(HaveOccurred())
+	if err != nil {
+		panic(err)
+	}
 
 	testConfig.Config.TimeoutScale = 3
 
@@ -65,9 +69,9 @@ func loadRedisTestConfig(path string) redisTestConfig {
 }
 
 var (
-	configPath   = os.Getenv("CONFIG_PATH")
+	configPath = os.Getenv("CONFIG_PATH")
 
-	redisConfig  redisTestConfig
+	redisConfig = loadRedisTestConfig(configPath)
 
 	smokeTestReporter *reporter.SmokeTestReport
 
@@ -77,23 +81,40 @@ var (
 func TestService(t *testing.T) {
 	smokeTestReporter = new(reporter.SmokeTestReport)
 
-	reporter := []Reporter{
+	testReporter := []Reporter{
 		Reporter(smokeTestReporter),
 	}
 
-	SynchronizedBeforeSuite(func() []byte {
-		redisConfig  = loadRedisTestConfig(configPath)
-
+	BeforeSuite(func() {
 		wfh = workflowhelpers.NewTestSuiteSetup(&redisConfig.Config)
-		wfh.Setup()
 
-		return []byte{}
-	}, func(data []byte) {})
+		beforeSuiteSteps := []*reporter.Step{
+			reporter.NewStep(
+				"Setup test suite",
+				wfh.Setup,
+			),
+		}
 
-	SynchronizedAfterSuite(func() {}, func() {
-		wfh.Teardown()
+		smokeTestReporter.RegisterBeforeSuiteSteps(beforeSuiteSteps)
+		for _, task := range beforeSuiteSteps {
+			task.Perform()
+		}
+	})
+
+	AfterSuite(func() {
+		afterSuiteSteps := []*reporter.Step{
+			reporter.NewStep(
+				"Tear down test suite",
+				wfh.Teardown,
+			),
+		}
+
+		smokeTestReporter.RegisterAfterSuiteSteps(afterSuiteSteps)
+		for _, task := range afterSuiteSteps {
+			task.Perform()
+		}
 	})
 
 	RegisterFailHandler(Fail)
-	RunSpecsWithDefaultAndCustomReporters(t, "P-Redis Smoke Tests", reporter)
+	RunSpecsWithDefaultAndCustomReporters(t, "P-Redis Smoke Tests", testReporter)
 }

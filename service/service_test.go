@@ -14,10 +14,6 @@ import (
 	. "github.com/onsi/ginkgo"
 )
 
-type CFTestContext struct {
-	Org, Space string
-}
-
 var _ = Describe("Redis Service", func() {
 	var (
 		testCF = smokeTestCF.CF{
@@ -35,8 +31,6 @@ var _ = Describe("Redis Service", func() {
 		planName            string
 		securityGroupName   string
 		serviceKeyName      string
-
-		cfTestContext CFTestContext
 	)
 
 	BeforeEach(func() {
@@ -56,7 +50,7 @@ var _ = Describe("Redis Service", func() {
 		}
 
 		var loginStep *reporter.Step
-		if cfTestConfig.AdminClient != "" && cfTestConfig.AdminClientSecret != ""{
+		if cfTestConfig.AdminClient != "" && cfTestConfig.AdminClientSecret != "" {
 			loginStep = reporter.NewStep(
 				"Log in as admin client",
 				testCF.AuthClient(cfTestConfig.AdminClient, cfTestConfig.AdminClientSecret),
@@ -75,8 +69,8 @@ var _ = Describe("Redis Service", func() {
 			),
 			loginStep,
 			reporter.NewStep(
-				fmt.Sprintf("Target '%s' org and '%s' space", cfTestContext.Org, cfTestContext.Space),
-				testCF.TargetOrgAndSpace(cfTestContext.Org, cfTestContext.Space),
+				fmt.Sprintf("Target '%s' org and '%s' space", wfh.GetOrganizationName(), wfh.TestSpace.SpaceName()),
+				testCF.TargetOrgAndSpace(wfh.GetOrganizationName(), wfh.TestSpace.SpaceName()),
 			),
 			reporter.NewStep(
 				"Push the redis sample app to Cloud Foundry",
@@ -148,7 +142,7 @@ var _ = Describe("Redis Service", func() {
 				),
 				reporter.NewStep(
 					fmt.Sprintf("Create and bind security group '%s' for running smoke tests", securityGroupName),
-					testCF.CreateAndBindSecurityGroup(securityGroupName, serviceInstanceName, cfTestContext.Org, cfTestContext.Space),
+					testCF.CreateAndBindSecurityGroup(securityGroupName, serviceInstanceName, wfh.GetOrganizationName(), wfh.TestSpace.SpaceName()),
 				),
 				reporter.NewStep(
 					"Start the app",
