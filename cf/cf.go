@@ -139,6 +139,19 @@ func (cf *CF) EnableServiceAccess(org, service string) func() {
 	}
 }
 
+func (cf *CF) DisableServiceAccess(org, service string) func() {
+	disableServiceAccessFn := func() *gexec.Session {
+		return helpersCF.Cf("disable-service-access", "-o", org, service)
+	}
+
+	return func() {
+		retry.Session(disableServiceAccessFn).WithSessionTimeout(cf.ShortTimeout).AndMaxRetries(cf.MaxRetries).AndBackoff(cf.RetryBackoff).Until(
+			retry.Succeeds,
+			`{"FailReason": "Failed to disable service access for CF test org"}`,
+		)
+	}
+}
+
 // TargetOrg is equivalent to `cf target -o {org}`
 func (cf *CF) TargetOrg(org string) func() {
 	targetOrgFn := func() *gexec.Session {
