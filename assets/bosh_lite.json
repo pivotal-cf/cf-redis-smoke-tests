@@ -1,19 +1,27 @@
 {
-  "service_name": "p-redis",
-  "plan_names": [
-    "dedicated-vm",
-    "shared-vm"
-  ],
-  "retry": {
-    "max_attempts": 10,
-    "backoff": "linear",
-    "baseline_interval_milliseconds": 1000
-  },
+  "api": "api.bosh-lite.com",
+  "use_existing_organization": true,
+  "existing_organization": "system",
+  "use_existing_space": false,
+  "space_name": "pivotal-services",
   "apps_domain": "bosh-lite.com",
   "system_domain": "bosh-lite.com",
-  "api": "api.bosh-lite.com",
   "admin_user": "admin",
   "admin_password": "admin",
+  "use_existing_user": true,
+  "existing_user": "admin",
+  "existing_user_password": "admin",
+  "service_name": "p-redis",
+  "plan_names": [
+    "shared-vm",
+    "dedicated-vm"
+  ],
+  "retry": {
+    "max_attempts": 30,
+    "backoff": "linear",
+    "baseline_interval_milliseconds": 200
+  },
   "skip_ssl_validation": true,
-  "create_permissive_security_group": false
+  "create_permissive_security_group": false,
+  "name_prefix": "cf-redis-smoke-tests"
 }

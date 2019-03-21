@@ -1,8 +1,10 @@
 ## Running smoke tests
 
-1. Find or create the appropriate environment config file in `assets/`
+1. Find or create the appropriate environment config file in `assets/`.
+ This can be copied from `/var/vcap/jobs/smoke-tests/config.json` for cf-redis-broker
+ or `/var/vcap/jobs/on-demand-broker-smoke-tests/config.json` for redis-on-demand-broker.
 
-1. Modify the `.envrc` to point to the config file identified. Can use a toolsmiths environment cf api credentials
+1. Modify the `.envrc` to point to the config file identified.
 
 1. Run `direnv allow`
 
