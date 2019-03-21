@@ -139,15 +139,24 @@ func (cf *CF) EnableServiceAccess(org, service string) func() {
 	}
 }
 
-func (cf *CF) DisableServiceAccess(org, service string) func() {
+// EnableServiceAccessForPlan is equivalent to `cf enable-service-access -o {org} {service-offering} -p {service-plan}`
+// In order to run enable-service-access idempotently we disable-service-access before.
+func (cf *CF) EnableServiceAccessForPlan(org, service, plan string) func() {
 	disableServiceAccessFn := func() *gexec.Session {
-		return helpersCF.Cf("disable-service-access", "-o", org, service)
+		return helpersCF.Cf("disable-service-access", "-o", org, service, "-p", plan)
+	}
+	enableServiceAccessFn := func() *gexec.Session {
+		return helpersCF.Cf("enable-service-access", "-o", org, service, "-p", plan)
 	}
 
 	return func() {
 		retry.Session(disableServiceAccessFn).WithSessionTimeout(cf.ShortTimeout).AndMaxRetries(cf.MaxRetries).AndBackoff(cf.RetryBackoff).Until(
 			retry.Succeeds,
 			`{"FailReason": "Failed to disable service access for CF test org"}`,
+		)
+		retry.Session(enableServiceAccessFn).WithSessionTimeout(cf.ShortTimeout).AndMaxRetries(cf.MaxRetries).AndBackoff(cf.RetryBackoff).Until(
+			retry.Succeeds,
+			`{"FailReason": "Failed to enable service access for CF test org"}`,
 		)
 	}
 }

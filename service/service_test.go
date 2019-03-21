@@ -105,10 +105,6 @@ var _ = Describe("Redis Service", func() {
 				testCF.EnsureServiceInstanceGone(serviceInstanceName),
 			),
 			reporter.NewStep(
-				fmt.Sprintf("Remove service access to plan %s", planName),
-				testCF.DisableServiceAccess(wfh.GetOrganizationName(), redisConfig.ServiceName),
-			),
-			reporter.NewStep(
 				"Delete the app",
 				testCF.Delete(appName),
 			),
@@ -129,17 +125,15 @@ var _ = Describe("Redis Service", func() {
 			app := redis.NewApp(uri, testCF.ShortTimeout, retryInterval)
 
 			enableServiceAccessStep := reporter.NewStep(
-				fmt.Sprintf("Enable service access for '%s' org", wfh.GetOrganizationName()),
-				testCF.EnableServiceAccess(wfh.GetOrganizationName(), redisConfig.ServiceName),
+				fmt.Sprintf("Enable service plan access for '%s' org", wfh.GetOrganizationName()),
+				testCF.EnableServiceAccessForPlan(wfh.GetOrganizationName(), redisConfig.ServiceName, planName),
 			)
-
 			serviceCreateStep := reporter.NewStep(
 				fmt.Sprintf("Create a '%s' plan instance of Redis\n    Please refer to http://docs.pivotal.io/redis/smoke-tests.html for more help on diagnosing this issue", planName),
 				testCF.CreateService(redisConfig.ServiceName, planName, serviceInstanceName, &skip),
 			)
 
-			smokeTestReporter.RegisterSpecSteps([]*reporter.Step{enableServiceAccessStep})
-			smokeTestReporter.RegisterSpecSteps([]*reporter.Step{serviceCreateStep})
+			smokeTestReporter.RegisterSpecSteps([]*reporter.Step{enableServiceAccessStep, serviceCreateStep})
 
 			specSteps := []*reporter.Step{
 				reporter.NewStep(
