@@ -19,7 +19,7 @@
     "workflowhelpers/internal",
   ]
   pruneopts = "UT"
-  revision = "83791edc4b0a2d48b602088c30332063b8f02f32"
+  revision = "53275963d9f746bc324c17814d10f1d8a56ea7ef"
 
 [[projects]]
   digest = "1:f378e8dd67d1fd0e68acac151b900f3c24ec254435c271df8c918152dfdddf93"
