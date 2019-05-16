@@ -8,6 +8,6 @@
 
 1. Run `direnv allow`
 
-1. Run `bin/test`
+1. Run `bin/test true`
 
 * Note `bin/test` does not run retry tests but that is just testing test helpers for use in waiting for asyncronous processes to complete. All tests are run when called from cf-redis-release and redis-service-adapter-release.

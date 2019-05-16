@@ -25,6 +25,12 @@ type CF struct {
 	RetryBackoff retry.Backoff
 }
 
+type Credentials struct {
+	Host 		string
+	Port 		int
+	TLS_Port 	int
+}
+
 // API is equivalent to `cf api {endpoint} [--skip-ssl-validation]`
 func (cf *CF) API(endpoint string, skipSSLValidation bool) func() {
 	apiCmd := []string{"api", endpoint}
@@ -205,7 +211,7 @@ func (cf *CF) CreateSpace(space string) func() {
 // CreateSecurityGroup is equivalent to `cf create-security-group {securityGroup} {configPath}`
 func (cf *CF) CreateAndBindSecurityGroup(securityGroup, serviceName, org, space string) func() {
 	return func() {
-		destination, port := cf.securityGroupDestination(serviceName)
+		destination, ports := cf.securityGroupDestination(serviceName)
 
 		sgFile, err := ioutil.TempFile("", "smoke-test-security-group-")
 		Expect(err).NotTo(HaveOccurred())
@@ -217,7 +223,7 @@ func (cf *CF) CreateAndBindSecurityGroup(securityGroup, serviceName, org, space 
 			Destination string `json:"destination"`
 			Ports       string `json:"ports"`
 		}{
-			{"tcp", destination, fmt.Sprintf("%d", port)},
+			{"tcp", destination, ports},
 		}
 
 		err = json.NewEncoder(sgFile).Encode(sgs)
@@ -235,24 +241,29 @@ func (cf *CF) CreateAndBindSecurityGroup(securityGroup, serviceName, org, space 
 	}
 }
 
-func (cf *CF) securityGroupDestination(serviceName string) (string, int) {
+func (cf *CF) securityGroupDestination(serviceName string) (string, string) {
 	serviceGuid := cf.getServiceInstanceGuid(serviceName)
-	host, port := cf.getServiceKeyCredentials(serviceGuid)
+	creds := cf.getServiceKeyCredentials(serviceGuid)
 
 	destination := "0.0.0.0/0"
 	if os.Getenv("ENABLE_ALL_DESTINATIONS") != "true" {
-		session := helpers.Run("dig", "+short", host)
+		session := helpers.Run("dig", "+short", creds.Host)
 		Eventually(session, 10*time.Second).Should(gexec.Exit(0))
 		ip := strings.TrimSpace(string(session.Out.Contents()))
 
 		if ip != "" {
 			destination = ip
 		} else {
-			destination = host
+			destination = creds.Host
 		}
 	}
 
-	return destination, port
+	ports := fmt.Sprintf("%d", creds.Port)
+	if creds.TLS_Port != 0 {
+		ports += fmt.Sprintf(",%d", creds.TLS_Port)
+	}
+
+	return destination, ports
 }
 
 // DeleteSecurityGroup is equivalent to `cf delete-security-group {securityGroup} -f`
@@ -554,17 +565,14 @@ func (cf *CF) getServiceInstanceGuid(serviceName string) string {
 	return strings.Trim(string(session.Out.Contents()), " \n")
 }
 
-func (cf *CF) getServiceKeyCredentials(serviceGuid string) (string, int) {
+func (cf *CF) getServiceKeyCredentials(serviceGuid string) Credentials {
 	session := helpersCF.Cf("curl", fmt.Sprintf("/v2/service_keys?q=service_instance_guid:%s", serviceGuid))
 	Eventually(session, cf.ShortTimeout).Should(gexec.Exit(0), `{"FailReason": "Failed to retrieve service bindings for app"}`)
 
 	var resp = new(struct {
 		Resources []struct {
 			Entity struct {
-				Credentials struct {
-					Host string
-					Port int
-				}
+				Credentials Credentials
 			}
 		}
 	})
@@ -576,5 +584,6 @@ func (cf *CF) getServiceKeyCredentials(serviceGuid string) (string, int) {
 	host, port := resp.Resources[0].Entity.Credentials.Host, resp.Resources[0].Entity.Credentials.Port
 	Expect(host).NotTo(BeEmpty(), `{"FailReason": "Invalid service key, missing host"}`)
 	Expect(port).NotTo(BeZero(), `{"FailReason": "Invalid service key, missing port"}`)
-	return host, port
+
+	return resp.Resources[0].Entity.Credentials
 }
