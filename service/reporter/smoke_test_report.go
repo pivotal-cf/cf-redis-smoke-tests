@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
+	"time"
 
 	"github.com/onsi/ginkgo"
 	"github.com/onsi/ginkgo/config"
@@ -14,12 +15,15 @@ type Step struct {
 	Description string
 	Result      string
 	Task        func()
+	Duration 	time.Duration
 }
 
 func (step *Step) Perform() {
 	step.Result = "FAILED"
+	start := time.Now()
 	step.Task()
 	step.Result = "PASSED"
+	step.Duration = time.Since(start)
 }
 
 func NewStep(description string, task func()) *Step {
@@ -114,7 +118,7 @@ func (report *SmokeTestReport) SpecDidComplete(summary *types.SpecSummary) {
 	fmt.Println("Smoke Test plan Results:")
 	count := len(report.specSteps)
 	for i, step := range report.specSteps {
-		fmt.Printf("[%d/%d] %s: %s\n", i+1, count, step.Description, step.Result)
+		fmt.Printf("[%d/%d] %s: %s Duration[%s] \n", i+1, count, step.Description, step.Result, step.Duration)
 	}
 	fmt.Println()
 }

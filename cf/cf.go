@@ -205,20 +205,7 @@ func (cf *CF) CreateSpace(space string) func() {
 // CreateSecurityGroup is equivalent to `cf create-security-group {securityGroup} {configPath}`
 func (cf *CF) CreateAndBindSecurityGroup(securityGroup, serviceName, org, space string) func() {
 	return func() {
-		serviceGuid := cf.getServiceInstanceGuid(serviceName)
-
-		host, port := cf.getServiceKeyCredentials(serviceGuid)
-
-		session := helpers.Run("dig", "+short", host)
-		Eventually(session, 10*time.Second).Should(gexec.Exit(0))
-		ip := strings.TrimSpace(string(session.Out.Contents()))
-
-		destination := ""
-		if ip != "" {
-			destination = ip
-		} else {
-			destination = host
-		}
+		destination, port := cf.securityGroupDestination(serviceName)
 
 		sgFile, err := ioutil.TempFile("", "smoke-test-security-group-")
 		Expect(err).NotTo(HaveOccurred())
@@ -246,6 +233,26 @@ func (cf *CF) CreateAndBindSecurityGroup(securityGroup, serviceName, org, space 
 			`{"FailReason": "Failed to bind security group to space"}`,
 		)
 	}
+}
+
+func (cf *CF) securityGroupDestination(serviceName string) (string, int) {
+	serviceGuid := cf.getServiceInstanceGuid(serviceName)
+	host, port := cf.getServiceKeyCredentials(serviceGuid)
+
+	destination := "0.0.0.0/0"
+	if os.Getenv("ENABLE_ALL_DESTINATIONS") != "true" {
+		session := helpers.Run("dig", "+short", host)
+		Eventually(session, 10*time.Second).Should(gexec.Exit(0))
+		ip := strings.TrimSpace(string(session.Out.Contents()))
+
+		if ip != "" {
+			destination = ip
+		} else {
+			destination = host
+		}
+	}
+
+	return destination, port
 }
 
 // DeleteSecurityGroup is equivalent to `cf delete-security-group {securityGroup} -f`
