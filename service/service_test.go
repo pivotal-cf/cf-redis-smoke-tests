@@ -159,6 +159,10 @@ var _ = Describe("Redis Service", func() {
 					testCF.UnbindService(appName, serviceInstanceName),
 				),
 				reporter.NewStep(
+					fmt.Sprintf("Delete security group '%s'", securityGroupName),
+					testCF.DeleteSecurityGroup(securityGroupName),
+				),
+				reporter.NewStep(
 					fmt.Sprintf("Delete the service key %s for the %q plan instance", serviceKeyName, planName),
 					testCF.DeleteServiceKey(serviceInstanceName, serviceKeyName),
 				),
@@ -256,6 +260,10 @@ var _ = Describe("Redis Service", func() {
 						testCF.UnbindService(appName, serviceInstanceName),
 					),
 					reporter.NewStep(
+						fmt.Sprintf("Delete security group '%s'", securityGroupName),
+						testCF.DeleteSecurityGroup(securityGroupName),
+					),
+					reporter.NewStep(
 						fmt.Sprintf("Delete the service key %s for the %q plan instance", serviceKeyName, planName),
 						testCF.DeleteServiceKey(serviceInstanceName, serviceKeyName),
 					),
@@ -292,4 +300,3 @@ var _ = Describe("Redis Service", func() {
 func randomName() string {
 	return uuid.NewRandom().String()
 }
-
