@@ -2,7 +2,6 @@ package service_test
 
 import (
 	"encoding/json"
-	"github.com/pivotal-cf/on-demand-service-broker/system_tests/test_helpers/cf_helpers"
 	"os"
 	"strings"
 	"testing"
@@ -90,9 +89,6 @@ func TestService(t *testing.T) {
 	BeforeSuite(func() {
 		wfh = workflowhelpers.NewTestSuiteSetup(&redisConfig.Config)
 
-		cf_helpers.CreateOrg(redisConfig.ExistingOrganization)
-		cf_helpers.CreateSpace(redisConfig.ExistingOrganization, redisConfig.ExistingSpace)
-
 		beforeSuiteSteps := []*reporter.Step{
 			reporter.NewStep(
 				"Setup test suite",
@@ -107,8 +103,6 @@ func TestService(t *testing.T) {
 	})
 
 	AfterSuite(func() {
-		cf_helpers.DeleteOrg(redisConfig.ExistingOrganization)
-		cf_helpers.DeleteSpace(redisConfig.ExistingOrganization, redisConfig.ExistingSpace)
 
 		afterSuiteSteps := []*reporter.Step{
 			reporter.NewStep(
