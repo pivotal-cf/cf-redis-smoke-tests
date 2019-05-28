@@ -2,6 +2,14 @@
   branch = "master"
   name = "github.com/cloudfoundry-incubator/cf-test-helpers"
 
+[[override]]
+  source = "https://github.com/fsnotify/fsnotify/archive/v1.4.7.tar.gz"
+  name = "gopkg.in/fsnotify.v1"
+
 [prune]
   go-tests = true
   unused-packages = true
+
+[[constraint]]
+  name = "github.com/pivotal-cf/on-demand-service-broker"
+  version = "0.29.1"

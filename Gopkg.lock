@@ -22,7 +22,38 @@
   revision = "ff434af77d370917e8129d00a34a6381e135a653"
 
 [[projects]]
-  digest = "1:f378e8dd67d1fd0e68acac151b900f3c24ec254435c271df8c918152dfdddf93"
+  branch = "master"
+  digest = "1:18181bb6116b6560ca1d95b88ac7271ade3f4bcb01802cdb77e47a97d76a295f"
+  name = "github.com/craigfurman/herottp"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "c546d62f2a8d8d52f6cb4c071663a56fe9508518"
+
+[[projects]]
+  digest = "1:582b704bebaa06b48c29b0cec224a6058a09c86883aaddabde889cd1a5f73e1b"
+  name = "github.com/google/uuid"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "0cd6bf5da1e1c83f8b45653022c74f71af0538a4"
+  version = "v1.1.1"
+
+[[projects]]
+  digest = "1:a1038ef593beb4771c8f0f9c26e8b00410acd800af5c6864651d9bf160ea1813"
+  name = "github.com/hpcloud/tail"
+  packages = [
+    ".",
+    "ratelimiter",
+    "util",
+    "watch",
+    "winfile",
+  ]
+  pruneopts = "UT"
+  revision = "a30252cb686a21eb2d0b98132633053ec2f7f1e5"
+  version = "v1.0.0"
+
+[[projects]]
+  branch = "master"
+  digest = "1:e9c3bb68a6c9470302b8046d4647e0612a2ea6037b9c6a47de60c0a90db504f8"
   name = "github.com/onsi/ginkgo"
   packages = [
     ".",
@@ -45,10 +76,10 @@
     "types",
   ]
   pruneopts = "UT"
-  revision = "8382b23d18dbaaff8e5f7e83784c53ebb8ec2f47"
+  revision = "4cb744166b80afeec15fd0b4446c640a7688cd51"
 
 [[projects]]
-  digest = "1:6f2c29f30fe3706d3b38fa895a1e37eadeb01ed0771b1760635f5fc88e14507d"
+  digest = "1:029c6999f3efa5f1cd3f8b9e02a8bc4276cc439d2dc8dc73cd98e4efd5c76cba"
   name = "github.com/onsi/gomega"
   packages = [
     ".",
@@ -67,29 +98,100 @@
     "types",
   ]
   pruneopts = "UT"
-  revision = "c463cd2a8578290d4be7a25cba69de81cf35785e"
+  revision = "90e289841c1ed79b7a598a7cd9959750cb5e89e2"
+  version = "v1.5.0"
 
 [[projects]]
-  digest = "1:361de06aa7ae272616cbe71c3994a654cc6316324e30998e650f7765b20c5b33"
+  digest = "1:e5d0bd87abc2781d14e274807a470acd180f0499f8bf5bb18606e9ec22ad9de9"
   name = "github.com/pborman/uuid"
   packages = ["."]
   pruneopts = "UT"
-  revision = "1b00554d822231195d1babd97ff4a781231955c9"
+  revision = "adf5a7427709b9deb95d29d3fa8a2bf9cfd388f1"
+  version = "v1.2"
 
 [[projects]]
-  digest = "1:032c293d33e54b610b65d275aad651493d242470b608dd222763c7f59afb947f"
+  digest = "1:8ed775577227e53a1716500ad3ba9e5dcb9660e4b3114057d90331f2f774ce30"
+  name = "github.com/pivotal-cf/on-demand-service-broker"
+  packages = [
+    "system_tests/test_helpers/cf_helpers",
+    "system_tests/test_helpers/service_helpers",
+  ]
+  pruneopts = "UT"
+  revision = "fa84f240824d5b27ff17dda2439966e38ed7a16f"
+  version = "v0.29.1"
+
+[[projects]]
+  branch = "master"
+  digest = "1:a167b5c532f3245f5a147ade26185f16d6ee8f8d3f6c9846f447e9d8b9705505"
+  name = "golang.org/x/net"
+  packages = [
+    "html",
+    "html/atom",
+    "html/charset",
+  ]
+  pruneopts = "UT"
+  revision = "f3200d17e092c607f615320ecaad13d87ad9a2b3"
+
+[[projects]]
+  branch = "master"
+  digest = "1:668e8c66b8895d69391429b0f64a72c35603c94f364c94d4e5fab5053d57a0b6"
   name = "golang.org/x/sys"
   packages = ["unix"]
   pruneopts = "UT"
-  revision = "075e574b89e4c2d22f2286a7e2b919519c6f3547"
+  revision = "adf421d2caf4ffcf74142ff5fb9ee323b21a819e"
 
 [[projects]]
-  branch = "v2"
-  digest = "1:a795b576298faaa0453e4e3ab67420c70e524f9e365ed8fd30fd504eca807aff"
+  digest = "1:8a0baffd5559acaa560f854d7d525c02f4fec2d4f8a214398556fb661a10f6e0"
+  name = "golang.org/x/text"
+  packages = [
+    "encoding",
+    "encoding/charmap",
+    "encoding/htmlindex",
+    "encoding/internal",
+    "encoding/internal/identifier",
+    "encoding/japanese",
+    "encoding/korean",
+    "encoding/simplifiedchinese",
+    "encoding/traditionalchinese",
+    "encoding/unicode",
+    "internal/gen",
+    "internal/language",
+    "internal/language/compact",
+    "internal/tag",
+    "internal/utf8internal",
+    "language",
+    "runes",
+    "transform",
+    "unicode/cldr",
+  ]
+  pruneopts = "UT"
+  revision = "342b2e1fbaa52c93f31447ad2c6abc048c63e475"
+  version = "v0.3.2"
+
+[[projects]]
+  digest = "1:abeb38ade3f32a92943e5be54f55ed6d6e3b6602761d74b4aab4c9dd45c18abd"
+  name = "gopkg.in/fsnotify.v1"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "c2828203cd70a50dcccfb2761f8b1f8ceef9a8e9"
+  source = "https://github.com/fsnotify/fsnotify/archive/v1.4.7.tar.gz"
+  version = "v1.4.7"
+
+[[projects]]
+  branch = "v1"
+  digest = "1:0caa92e17bc0b65a98c63e5bc76a9e844cd5e56493f8fdbb28fad101a16254d9"
+  name = "gopkg.in/tomb.v1"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "dd632973f1e7218eb1089048e0798ec9ae7dceb8"
+
+[[projects]]
+  digest = "1:4d2e5a73dc1500038e504a8d78b986630e3626dc027bc030ba5c75da257cdb96"
   name = "gopkg.in/yaml.v2"
   packages = ["."]
   pruneopts = "UT"
-  revision = "a3f3340b5840cee44f372bddb5880fcbc419b46a"
+  revision = "51d6538a90f86fe93ac480b35f37b2be17fef232"
+  version = "v2.2.2"
 
 [solve-meta]
   analyzer-name = "dep"
@@ -105,6 +207,7 @@
     "github.com/onsi/gomega",
     "github.com/onsi/gomega/gexec",
     "github.com/pborman/uuid",
+    "github.com/pivotal-cf/on-demand-service-broker/system_tests/test_helpers/cf_helpers",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1

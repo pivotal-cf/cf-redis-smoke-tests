@@ -15,6 +15,7 @@ import (
 
 	"github.com/pivotal-cf/cf-redis-smoke-tests/retry"
 	"github.com/pivotal-cf/cf-redis-smoke-tests/service/reporter"
+	"github.com/pivotal-cf/on-demand-service-broker/system_tests/test_helpers/cf_helpers"
 )
 
 type retryConfig struct {
@@ -48,7 +49,7 @@ type redisTestConfig struct {
 	ServiceName string      `json:"service_name"`
 	PlanNames   []string    `json:"plan_names"`
 	Retry       retryConfig `json:"retry"`
-	TLSEnabled 	bool   		`json:"tls_enabled"`
+	TLSEnabled  bool        `json:"tls_enabled"`
 }
 
 func loadRedisTestConfig(path string) redisTestConfig {
