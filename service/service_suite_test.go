@@ -2,11 +2,11 @@ package service_test
 
 import (
 	"encoding/json"
-	"github.com/pivotal-cf/on-demand-service-broker/system_tests/test_helpers/cf_helpers"
 	"os"
 	"strings"
 	"testing"
 	"time"
+
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/config"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/workflowhelpers"
@@ -89,8 +89,8 @@ func TestService(t *testing.T) {
 	}
 
 	BeforeSuite(func() {
-		wfh = workflowhelpers.NewTestSuiteSetup(&redisConfig.Config)
 
+		wfh = workflowhelpers.NewTestSuiteSetup(&redisConfig.Config)
 
 		beforeSuiteSteps := []*reporter.Step{
 			reporter.NewStep(
@@ -105,15 +105,10 @@ func TestService(t *testing.T) {
 			task.Perform()
 		}
 
-		cf_helpers.CreateOrg(redisConfig.ExistingOrganization)
-		cf_helpers.CreateSpace(redisConfig.ExistingOrganization, redisConfig.ExistingSpace)
+
 	})
 
 	AfterSuite(func() {
-
-		// Ensure that pivotal-services space and system or are not deleted
-		//cf_helpers.DeleteOrg(redisConfig.ExistingOrganization)
-		//cf_helpers.DeleteSpace(redisConfig.ExistingOrganization, redisConfig.ExistingSpace)
 
 		afterSuiteSteps := []*reporter.Step{
 			reporter.NewStep(
@@ -131,3 +126,4 @@ func TestService(t *testing.T) {
 	RegisterFailHandler(Fail)
 	RunSpecsWithDefaultAndCustomReporters(t, "P-Redis Smoke Tests", testReporter)
 }
+
