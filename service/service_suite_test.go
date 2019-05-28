@@ -15,7 +15,7 @@ import (
 
 	"github.com/pivotal-cf/cf-redis-smoke-tests/retry"
 	"github.com/pivotal-cf/cf-redis-smoke-tests/service/reporter"
-	"github.com/pivotal-cf/on-demand-service-broker/system_tests/test_helpers/cf_helpers"
+
 )
 
 type retryConfig struct {
@@ -91,8 +91,6 @@ func TestService(t *testing.T) {
 	BeforeSuite(func() {
 		wfh = workflowhelpers.NewTestSuiteSetup(&redisConfig.Config)
 
-		cf_helpers.CreateOrg(redisConfig.ExistingOrganization)
-		cf_helpers.CreateSpace(redisConfig.ExistingOrganization, redisConfig.ExistingSpace)
 
 		beforeSuiteSteps := []*reporter.Step{
 			reporter.NewStep(
@@ -102,9 +100,13 @@ func TestService(t *testing.T) {
 		}
 
 		smokeTestReporter.RegisterBeforeSuiteSteps(beforeSuiteSteps)
+
 		for _, task := range beforeSuiteSteps {
 			task.Perform()
 		}
+
+		cf_helpers.CreateOrg(redisConfig.ExistingOrganization)
+		cf_helpers.CreateSpace(redisConfig.ExistingOrganization, redisConfig.ExistingSpace)
 	})
 
 	AfterSuite(func() {
