@@ -117,8 +117,8 @@
     "system_tests/test_helpers/service_helpers",
   ]
   pruneopts = "UT"
-  revision = "fa84f240824d5b27ff17dda2439966e38ed7a16f"
-  version = "v0.29.1"
+  revision = "53c63cbcfc3b56a1a841365aa218b513ac2d360c"
+  version = "v0.30.0"
 
 [[projects]]
   branch = "master"
