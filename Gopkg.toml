@@ -3,7 +3,7 @@
   name = "github.com/cloudfoundry-incubator/cf-test-helpers"
 
 [[override]]
-  source = "https://github.com/fsnotify/fsnotify/archive/v1.4.7.tar.gz"
+  source = "https://github.com/fsnotify/fsnotify.git"
   name = "gopkg.in/fsnotify.v1"
 
 [prune]
