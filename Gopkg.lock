@@ -3,7 +3,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:53f7d298b31d1e0c2057008088115cedc1901cd4c421c8a25e5ae2087e57b283"
+  digest = "1:f947a30f045eb9be0c822945b7d36db09e4fe057a67a3a4a53fa33b65b78311f"
   name = "github.com/cloudfoundry-incubator/cf-test-helpers"
   packages = [
     "cf",
@@ -19,7 +19,7 @@
     "workflowhelpers/internal",
   ]
   pruneopts = "UT"
-  revision = "ff434af77d370917e8129d00a34a6381e135a653"
+  revision = "75adc785325154bd12bf092f8d0c5791d73dd092"
 
 [[projects]]
   branch = "master"
@@ -117,8 +117,8 @@
     "system_tests/test_helpers/service_helpers",
   ]
   pruneopts = "UT"
-  revision = "0f34cf0f95598b07e6b4f36295a2b1d46904304d"
-  version = "v0.31.0"
+  revision = "fa84f240824d5b27ff17dda2439966e38ed7a16f"
+  version = "v0.29.1"
 
 [[projects]]
   branch = "master"
@@ -174,7 +174,7 @@
   packages = ["."]
   pruneopts = "UT"
   revision = "c2828203cd70a50dcccfb2761f8b1f8ceef9a8e9"
-  source = "https://github.com/fsnotify/fsnotify/archive/v1.4.7.tar.gz"
+  source = "https://github.com/fsnotify/fsnotify.git"
   version = "v1.4.7"
 
 [[projects]]
