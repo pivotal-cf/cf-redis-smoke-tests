@@ -22,14 +22,6 @@
   revision = "75adc785325154bd12bf092f8d0c5791d73dd092"
 
 [[projects]]
-  branch = "master"
-  digest = "1:18181bb6116b6560ca1d95b88ac7271ade3f4bcb01802cdb77e47a97d76a295f"
-  name = "github.com/craigfurman/herottp"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "c546d62f2a8d8d52f6cb4c071663a56fe9508518"
-
-[[projects]]
   digest = "1:582b704bebaa06b48c29b0cec224a6058a09c86883aaddabde889cd1a5f73e1b"
   name = "github.com/google/uuid"
   packages = ["."]
@@ -108,17 +100,6 @@
   pruneopts = "UT"
   revision = "adf5a7427709b9deb95d29d3fa8a2bf9cfd388f1"
   version = "v1.2"
-
-[[projects]]
-  digest = "1:8ed775577227e53a1716500ad3ba9e5dcb9660e4b3114057d90331f2f774ce30"
-  name = "github.com/pivotal-cf/on-demand-service-broker"
-  packages = [
-    "system_tests/test_helpers/cf_helpers",
-    "system_tests/test_helpers/service_helpers",
-  ]
-  pruneopts = "UT"
-  revision = "394affecf036d7bd81234938c17cec2b2cca32f8"
-  version = "v0.31.1"
 
 [[projects]]
   branch = "master"
@@ -207,7 +188,6 @@
     "github.com/onsi/gomega",
     "github.com/onsi/gomega/gexec",
     "github.com/pborman/uuid",
-    "github.com/pivotal-cf/on-demand-service-broker/system_tests/test_helpers/cf_helpers",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1
