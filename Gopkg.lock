@@ -3,7 +3,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:f947a30f045eb9be0c822945b7d36db09e4fe057a67a3a4a53fa33b65b78311f"
+  digest = "1:dc4b173e315b69dcd51caa5095c18aaaa7a435d25ccbe09dc838b2f3a100561e"
   name = "github.com/cloudfoundry-incubator/cf-test-helpers"
   packages = [
     "cf",
@@ -19,7 +19,7 @@
     "workflowhelpers/internal",
   ]
   pruneopts = "UT"
-  revision = "75adc785325154bd12bf092f8d0c5791d73dd092"
+  revision = "621a86920bf4826ce212eba24f1b4f3173bd0fa7"
 
 [[projects]]
   digest = "1:582b704bebaa06b48c29b0cec224a6058a09c86883aaddabde889cd1a5f73e1b"
