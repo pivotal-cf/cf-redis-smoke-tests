@@ -18,9 +18,7 @@ type RedactingReporter struct {
 	redactor Redactor
 }
 
-var _ Reporter = new(RedactingReporter)
-
-func NewRedactingReporter(writer io.Writer, redactor Redactor) *RedactingReporter {
+func NewRedactingReporter(writer io.Writer, redactor Redactor) Reporter {
 	return &RedactingReporter{
 		writer:   writer,
 		redactor: redactor,

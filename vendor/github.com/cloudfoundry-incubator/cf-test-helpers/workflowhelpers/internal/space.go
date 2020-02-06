@@ -31,7 +31,6 @@ type TestSpace struct {
 type SpaceAndOrgConfig interface {
 	GetUseExistingOrganization() bool
 	GetUseExistingSpace() bool
-	GetAddExistingUserToExistingSpace() bool
 	GetExistingOrganization() string
 	GetExistingSpace() string
 }
@@ -100,18 +99,18 @@ func (ts *TestSpace) Create() {
 
 	if !ts.isExistingOrganization {
 		createQuota := internal.Cf(ts.CommandStarter, args...)
-		EventuallyWithOffset(1, createQuota, ts.Timeout).Should(Exit(0), "Failed to create quota")
+		EventuallyWithOffset(1, createQuota, ts.Timeout).Should(Exit(0))
 
 		createOrg := internal.Cf(ts.CommandStarter, "create-org", ts.organizationName)
-		EventuallyWithOffset(1, createOrg, ts.Timeout).Should(Exit(0), "Failed to create org")
+		EventuallyWithOffset(1, createOrg, ts.Timeout).Should(Exit(0))
 
 		setQuota := internal.Cf(ts.CommandStarter, "set-quota", ts.organizationName, ts.QuotaDefinitionName)
-		EventuallyWithOffset(1, setQuota, ts.Timeout).Should(Exit(0), "Failed to set org quota")
+		EventuallyWithOffset(1, setQuota, ts.Timeout).Should(Exit(0))
 	}
 
 	if !ts.isExistingSpace {
 		createSpace := internal.Cf(ts.CommandStarter, "create-space", "-o", ts.organizationName, ts.spaceName)
-		EventuallyWithOffset(1, createSpace, ts.Timeout).Should(Exit(0), "Failed to create space")
+		EventuallyWithOffset(1, createSpace, ts.Timeout).Should(Exit(0))
 	}
 }
 
@@ -120,13 +119,13 @@ func (ts *TestSpace) Destroy() {
 		return
 	} else if ts.isExistingOrganization {
 		deleteSpace := internal.Cf(ts.CommandStarter, "delete-space", "-f", "-o", ts.organizationName, ts.spaceName)
-		EventuallyWithOffset(1, deleteSpace, ts.Timeout).Should(Exit(0), "Failed to delete space")
+		EventuallyWithOffset(1, deleteSpace, ts.Timeout).Should(Exit(0))
 	} else {
 		deleteOrg := internal.Cf(ts.CommandStarter, "delete-org", "-f", ts.organizationName)
-		EventuallyWithOffset(1, deleteOrg, ts.Timeout).Should(Exit(0), "Failed to delete org")
+		EventuallyWithOffset(1, deleteOrg, ts.Timeout).Should(Exit(0))
 
 		deleteQuota := internal.Cf(ts.CommandStarter, "delete-quota", "-f", ts.QuotaDefinitionName)
-		EventuallyWithOffset(1, deleteQuota, ts.Timeout).Should(Exit(0), "Failed to delete quota")
+		EventuallyWithOffset(1, deleteQuota, ts.Timeout).Should(Exit(0))
 	}
 }
 
