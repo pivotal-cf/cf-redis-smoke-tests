@@ -116,9 +116,17 @@ var _ = Describe("Redis On-Demand", func() {
 				if !skip && tlsEnabled(serviceKey) {
 					tlsSpecSteps := []*reporter.Step{
 						reporter.NewStep("Enable tls", testCF.SetEnv(appName, "tls_enabled", "true")),
-						CreateTlsSpecStep(app, "tlsv1.2", "mykey", "myvalue"),
-						CreateTlsSpecStep(app, "tlsv1.1", "mykey", "myvalue"),
-						CreateTlsSpecStep(app, "tlsv1", "mykey", "myvalue"),
+						reporter.NewStep(
+							"TLS: Write a key/value pair to Redis",
+							app.Write("mykey", "myvalue2"),
+						),
+						reporter.NewStep(
+							"TLS: Read the key/value pair back",
+							app.ReadAssert("mykey", "myvalue2"),
+						),
+						CreateTlsSpecStep(app, "tlsv1.2", "mykey", "myvalue2"),
+						CreateTlsSpecStep(app, "tlsv1.1", "mykey", "myvalue2"),
+						CreateTlsSpecStep(app, "tlsv1", "mykey", "myvalue2"),
 					}
 					smokeTestReporter.RegisterSpecSteps(tlsSpecSteps)
 					performSteps(tlsSpecSteps)
