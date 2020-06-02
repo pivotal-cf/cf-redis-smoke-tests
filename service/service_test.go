@@ -52,7 +52,7 @@ var _ = Describe("Redis On-Demand", func() {
 			It("creates, binds to, writes to, reads from, unbinds, and destroys", func() {
 				var skip bool
 
-				uri := fmt.Sprintf("http://%s.%s", appName, redisConfig.Config.AppsDomain)
+				uri := fmt.Sprintf("https://%s.%s", appName, redisConfig.Config.AppsDomain)
 				app := redis.NewApp(uri, testCF.ShortTimeout, retryInterval)
 
 				enableServiceAccessStep := reporter.NewStep(
