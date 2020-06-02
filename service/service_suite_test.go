@@ -50,6 +50,7 @@ type redisTestConfig struct {
 	PlanNames   []string    `json:"plan_names"`
 	Retry       retryConfig `json:"retry"`
 	TLSEnabled  bool        `json:"tls_enabled"`
+	TLSVersions []string    `json:"tls_versions"`
 }
 
 func loadRedisTestConfig(path string) redisTestConfig {

@@ -3,6 +3,7 @@ package redis
 import (
 	"fmt"
 	"regexp"
+	"strings"
 	"time"
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
@@ -28,6 +29,11 @@ func NewApp(uri string, timeout, retryInterval time.Duration) *App {
 
 func (app *App) keyURI(key string) string {
 	return fmt.Sprintf("%s/%s", app.uri, key)
+}
+
+func (app *App) keyTLSURI(version string, key string) string {
+	tlsVersion := strings.Replace(strings.ToLower(version), "tls", "", -1)
+	return fmt.Sprintf("%s/tls/%s/%s", app.uri, tlsVersion, key)
 }
 
 // IsRunning pings the App
@@ -72,6 +78,21 @@ func (app *App) ReadAssert(key, expectedValue string) func() {
 		retry.Session(curlFn).WithSessionTimeout(app.timeout).AndBackoff(app.retryBackoff).Until(
 			retry.MatchesOutput(regexp.MustCompile(expectedValue)),
 			fmt.Sprintf(`{"FailReason": "Failed to get %s"}`, app.keyURI(key)),
+		)
+	}
+}
+
+//ReadTLSAssert checks that the value for the given key matches expected
+func (app *App) ReadTLSAssert(tlsVersion, key, expectedValue string) func() {
+	return func() {
+		curlFn := func() *gexec.Session {
+			fmt.Printf("\nGetting from url: %s\n", app.keyTLSURI(tlsVersion, key))
+			return helpers.CurlSkipSSL(false, app.keyTLSURI(tlsVersion, key))
+		}
+
+		retry.Session(curlFn).WithSessionTimeout(app.timeout).AndBackoff(app.retryBackoff).Until(
+			retry.MatchesOutput(regexp.MustCompile(expectedValue)),
+			fmt.Sprintf(`{"FailReason": "Failed to get expected value of '%s' from %s"}`, expectedValue, app.keyTLSURI(tlsVersion, key)),
 		)
 	}
 }

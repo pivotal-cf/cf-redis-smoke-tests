@@ -26,9 +26,10 @@ type CF struct {
 }
 
 type Credentials struct {
-	Host 		string
-	Port 		int
-	TLS_Port 	int
+	Host         string
+	Port         int
+	TLS_Port     int
+	TLS_Versions []string
 }
 
 // API is equivalent to `cf api {endpoint} [--skip-ssl-validation]`
@@ -529,6 +530,13 @@ func (cf *CF) Logout() func() {
 			retry.Succeeds,
 			`{"FailReason": "Failed to logout"}`,
 		)
+	}
+}
+
+func (cf CF) GetServiceKey(serviceInstanceName string, credentials *Credentials) func() {
+	return func() {
+		serviceGUID := cf.getServiceInstanceGuid(serviceInstanceName)
+		*credentials = cf.getServiceKeyCredentials(serviceGUID)
 	}
 }
 
