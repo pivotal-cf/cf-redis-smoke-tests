@@ -34,18 +34,13 @@ var _ = Describe("Redis On-Demand", func() {
 		serviceKey          smokeTestCF.Credentials
 
 		CreateTlsSpecStep = func(app *redis.App, version string, key string, value string) *reporter.Step {
-			step := reporter.NewStep(strings.ToUpper(version), nil)
-			step.Task = func() {
-				tlsMessage := strings.ToUpper(version) + " clients are "
-				if hasTLSVersion(serviceKey, version) {
-					step.Description = tlsMessage + "enabled"
-					app.ReadTLSAssert(version, key, value)()
-				} else {
-					step.Description = tlsMessage + "disabled"
-					app.ReadTLSAssert(version, key, "protocol not supported")()
-				}
+			tlsMessage := strings.ToUpper(version) + " clients are disabled"
+			valueCheck := "protocol not supported"
+			if hasTLSVersion(serviceKey, version) {
+				tlsMessage = strings.ToUpper(version) + " clients are enabled"
+				valueCheck = value
 			}
-			return step
+			return reporter.NewStep(tlsMessage, app.ReadTLSAssert(version, key, valueCheck))
 		}
 
 		AssertLifeCycleBehavior = func(planName string) {
@@ -124,9 +119,9 @@ var _ = Describe("Redis On-Demand", func() {
 							"TLS: Read the key/value pair back",
 							app.ReadAssert("mykey", "myvalue2"),
 						),
-						CreateTlsSpecStep(app, "tlsv1.2", "mykey", "myvalue2"),
-						CreateTlsSpecStep(app, "tlsv1.1", "mykey", "myvalue2"),
 						CreateTlsSpecStep(app, "tlsv1", "mykey", "myvalue2"),
+						CreateTlsSpecStep(app, "tlsv1.1", "mykey", "myvalue2"),
+						CreateTlsSpecStep(app, "tlsv1.2", "mykey", "myvalue2"),
 					}
 					smokeTestReporter.RegisterSpecSteps(tlsSpecSteps)
 					performSteps(tlsSpecSteps)
