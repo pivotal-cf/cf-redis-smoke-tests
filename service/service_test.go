@@ -48,6 +48,11 @@ var _ = Describe("Redis On-Demand", func() {
 				var skip bool
 
 				uri := fmt.Sprintf("https://%s.%s", appName, redisConfig.Config.AppsDomain)
+
+				if redisConfig.UseHttpApp {
+					uri = fmt.Sprintf("http://%s.%s", appName, redisConfig.Config.AppsDomain)
+				}
+
 				app := redis.NewApp(uri, testCF.ShortTimeout, retryInterval)
 
 				enableServiceAccessStep := reporter.NewStep(

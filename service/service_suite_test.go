@@ -7,7 +7,6 @@ import (
 	"testing"
 	"time"
 
-
 	"github.com/cloudfoundry-incubator/cf-test-helpers/config"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/workflowhelpers"
 	. "github.com/onsi/ginkgo"
@@ -15,7 +14,6 @@ import (
 
 	"github.com/pivotal-cf/cf-redis-smoke-tests/retry"
 	"github.com/pivotal-cf/cf-redis-smoke-tests/service/reporter"
-
 )
 
 type retryConfig struct {
@@ -51,6 +49,7 @@ type redisTestConfig struct {
 	Retry       retryConfig `json:"retry"`
 	TLSEnabled  bool        `json:"tls_enabled"`
 	TLSVersions []string    `json:"tls_versions"`
+	UseHttpApp  bool    	 `json:"use_http_app_smoke_tests"`
 }
 
 func loadRedisTestConfig(path string) redisTestConfig {
