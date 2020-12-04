@@ -7,5 +7,4 @@ require (
 	github.com/onsi/ginkgo v1.14.2
 	github.com/onsi/gomega v1.10.3
 	github.com/pborman/uuid v1.2.0
-	golang.org/x/text v0.3.3 // indirect
 )
