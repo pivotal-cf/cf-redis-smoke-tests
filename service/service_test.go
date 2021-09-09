@@ -127,6 +127,7 @@ var _ = Describe("Redis On-Demand", func() {
 						CreateTlsSpecStep(app, "tlsv1", "mykey", "myvalue2"),
 						CreateTlsSpecStep(app, "tlsv1.1", "mykey", "myvalue2"),
 						CreateTlsSpecStep(app, "tlsv1.2", "mykey", "myvalue2"),
+						CreateTlsSpecStep(app, "tlsv1.3", "mykey", "myvalue2"),
 					}
 					smokeTestReporter.RegisterSpecSteps(tlsSpecSteps)
 					performSteps(tlsSpecSteps)
