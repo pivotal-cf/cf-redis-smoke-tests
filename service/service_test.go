@@ -93,11 +93,11 @@ var _ = Describe("Redis On-Demand", func() {
 					),
 					reporter.NewStep(
 						"Verify that the app is responding",
-						app.IsRunning(),
+						app.IsRunning(tlsEnforced(serviceKey), serviceKey.TLS_Versions),
 					),
 					reporter.NewStep(
 						"Write a key/value pair to Redis",
-						app.Write("mykey", "myvalue"),
+						app.Write(tlsEnforced(serviceKey), "mykey", "myvalue"),
 					),
 					reporter.NewStep(
 						"Read the key/value pair back",
@@ -118,7 +118,7 @@ var _ = Describe("Redis On-Demand", func() {
 						reporter.NewStep("Enable tls", testCF.SetEnv(appName, "tls_enabled", "true")),
 						reporter.NewStep(
 							"TLS: Write a key/value pair to Redis",
-							app.Write("mykey", "myvalue2"),
+							app.WriteTLS(serviceKey.TLS_Versions[0], "mykey", "myvalue2"),
 						),
 						reporter.NewStep(
 							"TLS: Read the key/value pair back",
@@ -243,6 +243,10 @@ func hasTLSVersion(serviceKey smokeTestCF.Credentials, version string) bool {
 
 func tlsEnabled(serviceKey smokeTestCF.Credentials) bool {
 	return (serviceKey.TLS_Port > 0)
+}
+
+func tlsEnforced(serviceKey smokeTestCF.Credentials) bool {
+	return serviceKey.TLS_Port > 0 && serviceKey.Port == 0
 }
 
 func performSteps(specSteps []*reporter.Step) {

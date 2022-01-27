@@ -37,9 +37,14 @@ func (app *App) keyTLSURI(version string, key string) string {
 }
 
 // IsRunning pings the App
-func (app *App) IsRunning() func() {
+func (app *App) IsRunning(enforced bool, tlsVersions []string) func() {
 	return func() {
-		pingURI := fmt.Sprintf("%s/ping", app.uri)
+		var pingURI string
+		if enforced {
+			pingURI = fmt.Sprintf("%s/", app.keyTLSURI(tlsVersions[0], "ping"))
+		} else {
+			pingURI = fmt.Sprintf("%s/ping", app.uri)
+		}
 
 		curlFn := func() *gexec.Session {
 			fmt.Println("Checking that the app is responding at url: ", pingURI)
@@ -53,16 +58,35 @@ func (app *App) IsRunning() func() {
 	}
 }
 
-func (app *App) Write(key, value string) func() {
+func (app *App) Write(withTLS bool, key, value string) func() {
 	return func() {
 		curlFn := func() *gexec.Session {
 			fmt.Println("Posting to url: ", app.keyURI(key))
 			return helpers.CurlSkipSSL(true, "-d", fmt.Sprintf("data=%s", value), "-X", "PUT", app.keyURI(key))
 		}
+		if withTLS {
+			retry.Session(curlFn).WithSessionTimeout(app.timeout).AndBackoff(app.retryBackoff).Until(
+				retry.MatchesOutput(regexp.MustCompile("fail")),
+				fmt.Sprintf(`{"FailReason": "If enforced, it should not put %s"}`, app.keyURI(key)),
+			)
+		} else {
+			retry.Session(curlFn).WithSessionTimeout(app.timeout).AndBackoff(app.retryBackoff).Until(
+				retry.MatchesOutput(regexp.MustCompile("success")),
+				fmt.Sprintf(`{"FailReason": "Failed to put to %s"}`, app.keyURI(key)),
+			)
+		}
+	}
+}
 
+func (app *App) WriteTLS(tlsVersion, key, value string) func() {
+	return func() {
+		curlFn := func() *gexec.Session {
+			fmt.Println("Posting to url: ", app.keyURI(key))
+			return helpers.CurlSkipSSL(false, "-d", fmt.Sprintf("data=%s", value), "-X", "PUT", app.keyTLSURI(tlsVersion, key))
+		}
 		retry.Session(curlFn).WithSessionTimeout(app.timeout).AndBackoff(app.retryBackoff).Until(
 			retry.MatchesOutput(regexp.MustCompile("success")),
-			fmt.Sprintf(`{"FailReason": "Failed to put to %s"}`, app.keyURI(key)),
+			fmt.Sprintf(`{"FailReason": "Failed to put to %s"}`, app.keyTLSURI(tlsVersion, key)),
 		)
 	}
 }
