@@ -70,6 +70,7 @@ var _ = Describe("Redis On-Demand", func() {
 
 				serviceCreateStep.Description = fmt.Sprintf("Create a '%s' plan instance of Redis", planName)
 
+				enforced := tlsEnforced(serviceKey)
 				specSteps := []*reporter.Step{
 					reporter.NewStep(
 						fmt.Sprintf("Bind the redis sample app '%s' to the '%s' plan instance '%s' of Redis", appName, planName, serviceInstanceName),
@@ -93,15 +94,15 @@ var _ = Describe("Redis On-Demand", func() {
 					),
 					reporter.NewStep(
 						"Verify that the app is responding",
-						app.IsRunning(tlsEnforced(serviceKey), serviceKey.TLS_Versions),
+						app.IsRunning(enforced, serviceKey.TLS_Versions),
 					),
 					reporter.NewStep(
 						"Write a key/value pair to Redis",
-						app.Write(tlsEnforced(serviceKey), "mykey", "myvalue"),
+						app.Write(enforced, "mykey", "myvalue"),
 					),
 					reporter.NewStep(
 						"Read the key/value pair back",
-						app.ReadAssert("mykey", "myvalue"),
+						app.ReadAssert(enforced, "mykey", "myvalue"),
 					),
 				}
 
@@ -118,11 +119,11 @@ var _ = Describe("Redis On-Demand", func() {
 						reporter.NewStep("Enable tls", testCF.SetEnv(appName, "tls_enabled", "true")),
 						reporter.NewStep(
 							"TLS: Write a key/value pair to Redis",
-							app.WriteTLS(serviceKey.TLS_Versions[0], "mykey", "myvalue2"),
+							app.Write(false, "mykey", "myvalue2"),
 						),
 						reporter.NewStep(
 							"TLS: Read the key/value pair back",
-							app.ReadAssert("mykey", "myvalue2"),
+							app.ReadAssert(false, "mykey", "myvalue2"),
 						),
 						CreateTlsSpecStep(app, "tlsv1", "mykey", "myvalue2"),
 						CreateTlsSpecStep(app, "tlsv1.1", "mykey", "myvalue2"),
