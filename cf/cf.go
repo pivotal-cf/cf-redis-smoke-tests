@@ -590,8 +590,11 @@ func (cf *CF) getServiceKeyCredentials(serviceGuid string) Credentials {
 	Expect(resp.Resources).To(HaveLen(1), `{"FailReason": "Invalid service key response, expected exactly one service key"}`)
 
 	host, port := resp.Resources[0].Entity.Credentials.Host, resp.Resources[0].Entity.Credentials.Port
+	tlsPort := resp.Resources[0].Entity.Credentials.TLS_Port
 	Expect(host).NotTo(BeEmpty(), `{"FailReason": "Invalid service key, missing host"}`)
-	Expect(port).NotTo(BeZero(), `{"FailReason": "Invalid service key, missing port"}`)
+	if tlsPort == 0 {
+		Expect(port).NotTo(BeZero(), `{"FailReason": "Invalid service key, missing port"}`)
+	}
 
 	return resp.Resources[0].Entity.Credentials
 }
