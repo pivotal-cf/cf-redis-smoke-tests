@@ -37,68 +37,48 @@ func (app *App) keyTLSURI(version string, key string) string {
 }
 
 // IsRunning pings the App
-func (app *App) IsRunning(enforced bool, tlsVersions []string) func() {
+func (app *App) IsRunning() func() {
 	return func() {
-		var pingURI string
-		if enforced {
-			pingURI = app.keyTLSURI(tlsVersions[0], "ping")
-		} else {
-			pingURI = fmt.Sprintf("%s/ping", app.uri)
-		}
+		pingURI := fmt.Sprintf("%s/status/health", app.uri)
 
 		curlFn := func() *gexec.Session {
 			fmt.Println("Checking that the app is responding at url: ", pingURI)
-			if enforced {
-				return helpers.CurlSkipSSL(false, pingURI)
-			}
 			return helpers.CurlSkipSSL(true, pingURI)
 		}
 
 		retry.Session(curlFn).WithSessionTimeout(app.timeout).AndBackoff(app.retryBackoff).Until(
-			retry.MatchesOutput(regexp.MustCompile("key not present")),
+			retry.MatchesOutput(regexp.MustCompile("app is running")),
 			`{"FailReason": "Test app deployed but did not respond in time"}`,
 		)
 	}
 }
 
-func (app *App) Write(shouldFail bool, key, value string) func() {
+func (app *App) Write(key, value string) func() {
 	return func() {
 		curlFn := func() *gexec.Session {
 			fmt.Println("Posting to url: ", app.keyURI(key))
 			return helpers.CurlSkipSSL(true, "-d", fmt.Sprintf("data=%s", value), "-X", "PUT", app.keyURI(key))
 		}
-		if shouldFail {
-			retry.Session(curlFn).WithSessionTimeout(app.timeout).AndBackoff(app.retryBackoff).Until(
-				retry.MatchesOutput(regexp.MustCompile("fail")),
-				fmt.Sprintf(`{"FailReason": "If enforced, it should not put %s"}`, app.keyURI(key)),
-			)
-		} else {
-			retry.Session(curlFn).WithSessionTimeout(app.timeout).AndBackoff(app.retryBackoff).Until(
-				retry.MatchesOutput(regexp.MustCompile("success")),
-				fmt.Sprintf(`{"FailReason": "Failed to put to %s"}`, app.keyURI(key)),
-			)
-		}
+
+		retry.Session(curlFn).WithSessionTimeout(app.timeout).AndBackoff(app.retryBackoff).Until(
+			retry.MatchesOutput(regexp.MustCompile("success")),
+			fmt.Sprintf(`{"FailReason": "Failed to put to %s"}`, app.keyURI(key)),
+		)
 	}
 }
 
 //ReadAssert checks that the value for the given key matches expected
-func (app *App) ReadAssert(shouldFail bool, key, expectedValue string) func() {
+func (app *App) ReadAssert(key, expectedValue string) func() {
 	return func() {
 		curlFn := func() *gexec.Session {
 			fmt.Printf("\nGetting from url: %s\n", app.keyURI(key))
 			return helpers.CurlSkipSSL(true, app.keyURI(key))
 		}
-		if shouldFail {
-			retry.Session(curlFn).WithSessionTimeout(app.timeout).AndBackoff(app.retryBackoff).Until(
-				retry.MatchesOutput(regexp.MustCompile("fail")),
-				fmt.Sprintf(`{"FailReason": "Failed to get %s"}`, app.keyURI(key)),
-			)
-		} else {
-			retry.Session(curlFn).WithSessionTimeout(app.timeout).AndBackoff(app.retryBackoff).Until(
-				retry.MatchesOutput(regexp.MustCompile(expectedValue)),
-				fmt.Sprintf(`{"FailReason": "Failed to get %s"}`, app.keyURI(key)),
-			)
-		}
+
+		retry.Session(curlFn).WithSessionTimeout(app.timeout).AndBackoff(app.retryBackoff).Until(
+			retry.MatchesOutput(regexp.MustCompile(expectedValue)),
+			fmt.Sprintf(`{"FailReason": "Failed to get %s"}`, app.keyURI(key)),
+		)
 	}
 }
 
