@@ -41,13 +41,16 @@ func (app *App) IsRunning(enforced bool, tlsVersions []string) func() {
 	return func() {
 		var pingURI string
 		if enforced {
-			pingURI = fmt.Sprintf("%s/", app.keyTLSURI(tlsVersions[0], "ping"))
+			pingURI = app.keyTLSURI(tlsVersions[0], "ping")
 		} else {
 			pingURI = fmt.Sprintf("%s/ping", app.uri)
 		}
 
 		curlFn := func() *gexec.Session {
 			fmt.Println("Checking that the app is responding at url: ", pingURI)
+			if enforced {
+				return helpers.CurlSkipSSL(false, pingURI)
+			}
 			return helpers.CurlSkipSSL(true, pingURI)
 		}
 

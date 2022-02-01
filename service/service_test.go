@@ -70,7 +70,6 @@ var _ = Describe("Redis On-Demand", func() {
 
 				serviceCreateStep.Description = fmt.Sprintf("Create a '%s' plan instance of Redis", planName)
 
-				enforced := tlsEnforced(serviceKey)
 				specSteps := []*reporter.Step{
 					reporter.NewStep(
 						fmt.Sprintf("Bind the redis sample app '%s' to the '%s' plan instance '%s' of Redis", appName, planName, serviceInstanceName),
@@ -94,15 +93,15 @@ var _ = Describe("Redis On-Demand", func() {
 					),
 					reporter.NewStep(
 						"Verify that the app is responding",
-						app.IsRunning(enforced, serviceKey.TLS_Versions),
+						app.IsRunning(tlsEnforced(serviceKey), serviceKey.TLS_Versions),
 					),
 					reporter.NewStep(
 						"Write a key/value pair to Redis",
-						app.Write(enforced, "mykey", "myvalue"),
+						app.Write(tlsEnforced(serviceKey), "mykey", "myvalue"),
 					),
 					reporter.NewStep(
 						"Read the key/value pair back",
-						app.ReadAssert(enforced, "mykey", "myvalue"),
+						app.ReadAssert(tlsEnforced(serviceKey), "mykey", "myvalue"),
 					),
 				}
 
