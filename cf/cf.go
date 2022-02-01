@@ -263,7 +263,11 @@ func (cf *CF) securityGroupDestination(serviceName string) (string, string) {
 		ports = fmt.Sprintf("%d", creds.Port)
 	}
 	if creds.TLS_Port != 0 {
-		ports += fmt.Sprintf(",%d", creds.TLS_Port)
+		if ports != "" {
+			ports += fmt.Sprintf(",%d", creds.TLS_Port)
+		} else {
+			ports = fmt.Sprintf("%d", creds.TLS_Port)
+		}
 	}
 
 	return destination, ports
