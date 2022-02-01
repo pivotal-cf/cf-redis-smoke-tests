@@ -93,16 +93,19 @@ var _ = Describe("Redis On-Demand", func() {
 					),
 					reporter.NewStep(
 						"Verify that the app is responding",
-						app.IsRunning(tlsEnforced(serviceKey), serviceKey.TLS_Versions),
+						app.IsRunning(),
 					),
-					reporter.NewStep(
-						"Write a key/value pair to Redis",
-						app.Write(tlsEnforced(serviceKey), "mykey", "myvalue"),
-					),
-					reporter.NewStep(
-						"Read the key/value pair back",
-						app.ReadAssert(tlsEnforced(serviceKey), "mykey", "myvalue"),
-					),
+				}
+				if !tlsEnforced(serviceKey) {
+					specSteps = append(specSteps,
+						reporter.NewStep(
+							"Write a key/value pair to Redis",
+							app.Write( "mykey", "myvalue"),
+						),
+						reporter.NewStep(
+							"Read the key/value pair back",
+							app.ReadAssert( "mykey", "myvalue"),
+						))
 				}
 
 				smokeTestReporter.RegisterSpecSteps(specSteps)
@@ -118,11 +121,11 @@ var _ = Describe("Redis On-Demand", func() {
 						reporter.NewStep("Enable tls", testCF.SetEnv(appName, "tls_enabled", "true")),
 						reporter.NewStep(
 							"TLS: Write a key/value pair to Redis",
-							app.Write(false, "mykey", "myvalue2"),
+							app.Write("mykey", "myvalue2"),
 						),
 						reporter.NewStep(
 							"TLS: Read the key/value pair back",
-							app.ReadAssert(false, "mykey", "myvalue2"),
+							app.ReadAssert( "mykey", "myvalue2"),
 						),
 						CreateTlsSpecStep(app, "tlsv1", "mykey", "myvalue2"),
 						CreateTlsSpecStep(app, "tlsv1.1", "mykey", "myvalue2"),
