@@ -96,17 +96,6 @@ var _ = Describe("Redis On-Demand", func() {
 						app.IsRunning(),
 					),
 				}
-				if !tlsEnforced(serviceKey) {
-					specSteps = append(specSteps,
-						reporter.NewStep(
-							"Write a key/value pair to Redis",
-							app.Write( "mykey", "myvalue"),
-						),
-						reporter.NewStep(
-							"Read the key/value pair back",
-							app.ReadAssert( "mykey", "myvalue"),
-						))
-				}
 
 				smokeTestReporter.RegisterSpecSteps(specSteps)
 
@@ -116,6 +105,20 @@ var _ = Describe("Redis On-Demand", func() {
 					performSteps(specSteps)
 				}
 
+				if !skip && !tlsEnforced(serviceKey) {
+					standardPortSpecs := []*reporter.Step{
+						reporter.NewStep(
+							"Write a key/value pair to Redis",
+							app.Write("mykey", "myvalue"),
+						),
+						reporter.NewStep(
+							"Read the key/value pair back",
+							app.ReadAssert("mykey", "myvalue"),
+						),
+					}
+					smokeTestReporter.RegisterSpecSteps(standardPortSpecs)
+					performSteps(standardPortSpecs)
+				}
 				if !skip && tlsEnabled(serviceKey) {
 					tlsSpecSteps := []*reporter.Step{
 						reporter.NewStep("Enable tls", testCF.SetEnv(appName, "tls_enabled", "true")),
@@ -125,7 +128,7 @@ var _ = Describe("Redis On-Demand", func() {
 						),
 						reporter.NewStep(
 							"TLS: Read the key/value pair back",
-							app.ReadAssert( "mykey", "myvalue2"),
+							app.ReadAssert("mykey", "myvalue2"),
 						),
 						CreateTlsSpecStep(app, "tlsv1", "mykey", "myvalue2"),
 						CreateTlsSpecStep(app, "tlsv1.1", "mykey", "myvalue2"),
