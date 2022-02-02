@@ -525,6 +525,19 @@ func (cf *CF) SetEnv(appName, environmentVariable, instanceName string) func() {
 	}
 }
 
+// Restage is equivalent to `cf restage {appName}`
+func (cf *CF) Restage(appName string) func() {
+	restageFn := func() *gexec.Session {
+		return helpersCF.Cf("restage", appName)
+	}
+	return func() {
+		retry.Session(restageFn).WithSessionTimeout(cf.ShortTimeout).AndMaxRetries(cf.MaxRetries).AndBackoff(cf.RetryBackoff).Until(
+			retry.Succeeds,
+			`{"FailReason": "Failed to restage the test app"}`,
+		)
+	}
+}
+
 // Logout is equivalent to `cf logout`
 func (cf *CF) Logout() func() {
 	logoutFn := func() *gexec.Session {

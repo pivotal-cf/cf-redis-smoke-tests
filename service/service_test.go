@@ -122,6 +122,7 @@ var _ = Describe("Redis On-Demand", func() {
 				if !skip && tlsEnabled(serviceKey) {
 					tlsSpecSteps := []*reporter.Step{
 						reporter.NewStep("Enable tls", testCF.SetEnv(appName, "tls_enabled", "true")),
+						reporter.NewStep("Restage app", testCF.Restage(appName)),
 						reporter.NewStep(
 							"TLS: Write a key/value pair to Redis",
 							app.Write("mykey", "myvalue2"),
