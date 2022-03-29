@@ -17,7 +17,7 @@ import (
 var _ = Describe("Redis On-Demand", func() {
 	var (
 		testCF = smokeTestCF.CF{
-			ShortTimeout: time.Minute * 3,
+			ShortTimeout: time.Minute * 6,
 			LongTimeout:  time.Minute * 15,
 			RetryBackoff: redisConfig.Retry.Backoff(),
 			MaxRetries:   redisConfig.Retry.MaxRetries(),
