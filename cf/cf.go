@@ -150,7 +150,7 @@ func (cf *CF) EnableServiceAccess(org, service string) func() {
 // In order to run enable-service-access idempotently we disable-service-access before.
 func (cf *CF) EnableServiceAccessForPlan(org, service, plan string) func() {
 	disableServiceAccessFn := func() *gexec.Session {
-		return helpersCF.Cf("disable-service-access", "-o", org, service, "-p", plan)
+		return helpersCF.Cf("disable-service-access", service, "-p", plan)
 	}
 	enableServiceAccessFn := func() *gexec.Session {
 		return helpersCF.Cf("enable-service-access", "-o", org, service, "-p", plan)
@@ -235,7 +235,7 @@ func (cf *CF) CreateAndBindSecurityGroup(securityGroup, serviceName, org, space 
 			`{"FailReason": "Failed to create security group"}`,
 		)
 
-		Eventually(helpersCF.Cf("bind-security-group", securityGroup, org, space), cf.ShortTimeout).Should(
+		Eventually(helpersCF.Cf("bind-security-group", securityGroup, org, "--space", space), cf.ShortTimeout).Should(
 			gexec.Exit(0),
 			`{"FailReason": "Failed to bind security group to space"}`,
 		)
@@ -441,7 +441,7 @@ func (cf *CF) EnsureServiceInstanceGone(instanceName string) func() {
 
 	return func() {
 		retry.Session(serviceFn).WithSessionTimeout(cf.ShortTimeout).AndMaxRetries(maxRetries).AndBackoff(backoff).Until(
-			retry.MatchesErrorOutput(regexp.MustCompile(fmt.Sprintf("Service instance %s not found", instanceName))),
+			retry.MatchesErrorOutput(regexp.MustCompile(fmt.Sprintf("Service instance '%s' not found", instanceName))),
 			fmt.Sprintf(`{"FailReason": "Failed to make sure service %s does not exist"}`, instanceName),
 		)
 	}

@@ -162,7 +162,6 @@ var _ = Describe("Redis On-Demand", func() {
 			pushArgs := []string{
 				"-m", "256M",
 				"-p", appPath,
-				"-d", cfTestConfig.AppsDomain,
 				"-b", "ruby_buildpack",
 				"--no-start",
 			}
