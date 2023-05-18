@@ -153,7 +153,7 @@ func (cf *CF) EnableServiceAccessForPlan(org, service, plan string) func() {
 		return helpersCF.Cf("disable-service-access", service, "-p", plan)
 	}
 	enableServiceAccessFn := func() *gexec.Session {
-		return helpersCF.Cf("enable-service-access", "-o", org, service, "-p", plan)
+		return helpersCF.Cf("enable-service-access", service, "-p", plan)
 	}
 
 	return func() {
