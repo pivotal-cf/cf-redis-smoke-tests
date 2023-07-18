@@ -150,10 +150,10 @@ func (cf *CF) EnableServiceAccess(org, service string) func() {
 // In order to run enable-service-access idempotently we disable-service-access before.
 func (cf *CF) EnableServiceAccessForPlan(org, service, plan string) func() {
 	disableServiceAccessFn := func() *gexec.Session {
-		return helpersCF.Cf("disable-service-access", service, "-p", plan)
+		return helpersCF.Cf("disable-service-access", service, "-p", plan, "-o", org)
 	}
 	enableServiceAccessFn := func() *gexec.Session {
-		return helpersCF.Cf("enable-service-access", service, "-p", plan)
+		return helpersCF.Cf("enable-service-access", service, "-p", plan, "-o", org)
 	}
 
 	return func() {
