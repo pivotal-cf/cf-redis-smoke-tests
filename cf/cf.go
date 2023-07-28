@@ -150,15 +150,16 @@ func (cf *CF) EnableServiceAccess(org, service string) func() {
 // In order to run enable-service-access idempotently we disable-service-access before.
 func (cf *CF) EnableServiceAccessForPlan(org, service, plan string) func() {
 	disableServiceAccessFn := func() *gexec.Session {
-		return helpersCF.Cf("disable-service-access", service, "-p", plan)
+		return helpersCF.Cf("disable-service-access", service, "-p", plan, "-o", org)
 	}
 	enableServiceAccessFn := func() *gexec.Session {
-		return helpersCF.Cf("enable-service-access", service, "-p", plan)
+		return helpersCF.Cf("enable-service-access", service, "-p", plan, "-o", org)
 	}
 
 	return func() {
-		retry.Session(disableServiceAccessFn).WithSessionTimeout(cf.ShortTimeout).AndMaxRetries(cf.MaxRetries).AndBackoff(cf.RetryBackoff).Until(
-			retry.Succeeds,
+		conditions := []retry.Condition{retry.Succeeds, retry.MatchesErrorOutput(regexp.MustCompile(`.*Cannot remove organization level access for public plans.*`))}
+		retry.Session(disableServiceAccessFn).WithSessionTimeout(cf.ShortTimeout).AndMaxRetries(cf.MaxRetries).AndBackoff(cf.RetryBackoff).UntilAny(
+			conditions,
 			`{"FailReason": "Failed to disable service access for CF test org"}`,
 		)
 		retry.Session(enableServiceAccessFn).WithSessionTimeout(cf.ShortTimeout).AndMaxRetries(cf.MaxRetries).AndBackoff(cf.RetryBackoff).Until(
