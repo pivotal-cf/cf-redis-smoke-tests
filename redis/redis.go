@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
+	"github.com/cloudfoundry/cf-test-helpers/v2/helpers"
 	"github.com/onsi/gomega/gexec"
 	"github.com/pivotal-cf/cf-redis-smoke-tests/retry"
 )
@@ -67,7 +67,7 @@ func (app *App) Write(key, value string) func() {
 	}
 }
 
-//ReadAssert checks that the value for the given key matches expected
+// ReadAssert checks that the value for the given key matches expected
 func (app *App) ReadAssert(key, expectedValue string) func() {
 	return func() {
 		curlFn := func() *gexec.Session {
@@ -82,7 +82,7 @@ func (app *App) ReadAssert(key, expectedValue string) func() {
 	}
 }
 
-//ReadTLSAssert checks that the value for the given key matches expected
+// ReadTLSAssert checks that the value for the given key matches expected
 func (app *App) ReadTLSAssert(tlsVersion, key, expectedValue string) func() {
 	return func() {
 		curlFn := func() *gexec.Session {

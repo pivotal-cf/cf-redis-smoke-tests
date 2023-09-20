@@ -7,9 +7,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/cloudfoundry-incubator/cf-test-helpers/config"
-	"github.com/cloudfoundry-incubator/cf-test-helpers/workflowhelpers"
-	. "github.com/onsi/ginkgo"
+	"github.com/cloudfoundry/cf-test-helpers/v2/config"
+	"github.com/cloudfoundry/cf-test-helpers/v2/workflowhelpers"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
 	"github.com/pivotal-cf/cf-redis-smoke-tests/retry"
@@ -49,7 +49,7 @@ type redisTestConfig struct {
 	Retry       retryConfig `json:"retry"`
 	TLSEnabled  bool        `json:"tls_enabled"`
 	TLSVersions []string    `json:"tls_versions"`
-	UseHttpApp  bool    	 `json:"use_http_app_smoke_tests"`
+	UseHttpApp  bool        `json:"use_http_app_smoke_tests"`
 }
 
 func loadRedisTestConfig(path string) redisTestConfig {
@@ -105,7 +105,6 @@ func TestService(t *testing.T) {
 			task.Perform()
 		}
 
-
 	})
 
 	AfterSuite(func() {
@@ -126,4 +125,3 @@ func TestService(t *testing.T) {
 	RegisterFailHandler(Fail)
 	RunSpecsWithDefaultAndCustomReporters(t, "P-Redis Smoke Tests", testReporter)
 }
-
