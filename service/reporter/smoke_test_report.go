@@ -6,16 +6,16 @@ import (
 	"strings"
 	"time"
 
-	"github.com/onsi/ginkgo"
-	"github.com/onsi/ginkgo/config"
-	"github.com/onsi/ginkgo/types"
+	"github.com/onsi/ginkgo/v2"
+	"github.com/onsi/ginkgo/v2/config"
+	"github.com/onsi/ginkgo/v2/types"
 )
 
 type Step struct {
 	Description string
 	Result      string
 	Task        func()
-	Duration 	time.Duration
+	Duration    time.Duration
 }
 
 func (step *Step) Perform() {
@@ -42,13 +42,13 @@ type failure struct {
 type SmokeTestReport struct {
 	testCount        int
 	failures         []failure
-	beforeSuitesteps []*Step
+	beforeSuiteSteps []*Step
 	afterSuiteSteps  []*Step
 	specSteps        []*Step
 }
 
 func (report *SmokeTestReport) RegisterBeforeSuiteSteps(steps []*Step) {
-	report.beforeSuitesteps = append(report.beforeSuitesteps, steps...)
+	report.beforeSuiteSteps = append(report.beforeSuiteSteps, steps...)
 }
 
 func (report *SmokeTestReport) RegisterAfterSuiteSteps(steps []*Step) {
@@ -63,23 +63,23 @@ func (report *SmokeTestReport) ClearSpecSteps() {
 	report.specSteps = []*Step{}
 }
 
-func (report *SmokeTestReport) SpecSuiteWillBegin(
+func (report *SmokeTestReport) SuiteWillBegin(
 	config config.GinkgoConfigType,
 	summary *types.SuiteSummary,
 ) {
-	if ginkgo.GinkgoParallelNode() != 1 {
+	if ginkgo.GinkgoParallelProcess() != 1 {
 		return
 	}
 	report.printMessageTitle("Beginning test suite setup")
 }
 
 func (report *SmokeTestReport) BeforeSuiteDidRun(summary *types.SetupSummary) {
-	if ginkgo.GinkgoParallelNode() != 1 {
+	if ginkgo.GinkgoParallelProcess() != 1 {
 		return
 	}
 	if summary.State == types.SpecStateFailed ||
 		summary.State == types.SpecStatePanicked ||
-		summary.State == types.SpecStateTimedOut {
+		summary.State == types.SpecStateTimedout {
 
 		report.failures = append(report.failures, failure{
 			title:   "Suite setup",
@@ -89,8 +89,8 @@ func (report *SmokeTestReport) BeforeSuiteDidRun(summary *types.SetupSummary) {
 	report.printMessageTitle("Finished test suite setup")
 
 	fmt.Println("Smoke Test Suite Setup Results:")
-	count := len(report.beforeSuitesteps)
-	for i, step := range report.beforeSuitesteps {
+	count := len(report.beforeSuiteSteps)
+	for i, step := range report.beforeSuiteSteps {
 		fmt.Printf("[%d/%d] %s: %s\n", i+1, count, step.Description, step.Result)
 	}
 	fmt.Println()
@@ -124,7 +124,7 @@ func (report *SmokeTestReport) SpecDidComplete(summary *types.SpecSummary) {
 }
 
 func (report *SmokeTestReport) AfterSuiteDidRun(summary *types.SetupSummary) {
-	if ginkgo.GinkgoParallelNode() != 1 {
+	if ginkgo.GinkgoParallelProcess() != 1 {
 		return
 	}
 	report.printMessageTitle("Finished suite teardown")
@@ -137,8 +137,8 @@ func (report *SmokeTestReport) AfterSuiteDidRun(summary *types.SetupSummary) {
 	fmt.Println()
 }
 
-func (report *SmokeTestReport) SpecSuiteDidEnd(summary *types.SuiteSummary) {
-	if ginkgo.GinkgoParallelNode() != 1 {
+func (report *SmokeTestReport) SuiteDidEnd(summary *types.SuiteSummary) {
+	if ginkgo.GinkgoParallelProcess() != 1 {
 		return
 	}
 	matchJSON, err := regexp.Compile(`{"FailReason":\s"(.*)"}`)

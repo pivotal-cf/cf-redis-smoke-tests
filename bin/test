@@ -5,6 +5,6 @@ set -x
 
 LOCAL_RUN=${1:-false}
 
-go install -v github.com/onsi/ginkgo/ginkgo
+go install -v github.com/onsi/ginkgo/v2/ginkgo
 
 CF_COLOR=false CF_VERBOSE_OUTPUT=true ENABLE_ALL_DESTINATIONS=${LOCAL_RUN} ginkgo -r -v -noColor=true -keepGoing=true -trace=true -slowSpecThreshold=300 -p service
