@@ -442,7 +442,7 @@ func (cf *CF) EnsureServiceInstanceGone(instanceName string) func() {
 
 	return func() {
 		retry.Session(serviceFn).WithSessionTimeout(cf.ShortTimeout).AndMaxRetries(maxRetries).AndBackoff(backoff).Until(
-			retry.MatchesErrorOutput(regexp.MustCompile(fmt.Sprintf("Service instance '%s' not found", instanceName))),
+			retry.MatchesErrorOutput(regexp.MustCompile(fmt.Sprintf("Service instance '?%s'? not found", instanceName))),
 			fmt.Sprintf(`{"FailReason": "Failed to make sure service %s does not exist"}`, instanceName),
 		)
 	}
