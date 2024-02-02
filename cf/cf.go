@@ -32,6 +32,12 @@ type Credentials struct {
 	TLS_Versions []string
 }
 
+type SecurityGroup struct {
+	Protocol    string `json:"protocol"`
+	Destination string `json:"destination"`
+	Ports       string `json:"ports"`
+}
+
 // API is equivalent to `cf api {endpoint} [--skip-ssl-validation]`
 func (cf *CF) API(endpoint string, skipSSLValidation bool) func() {
 	apiCmd := []string{"api", endpoint}
@@ -213,19 +219,17 @@ func (cf *CF) CreateSpace(space string) func() {
 // CreateSecurityGroup is equivalent to `cf create-security-group {securityGroup} {configPath}`
 func (cf *CF) CreateAndBindSecurityGroup(securityGroup, serviceName, org, space string) func() {
 	return func() {
-		destination, ports := cf.securityGroupDestination(serviceName)
+		destinations, ports := cf.securityGroupDestination(serviceName)
 
 		sgFile, err := ioutil.TempFile("", "smoke-test-security-group-")
 		Expect(err).NotTo(HaveOccurred())
 		defer sgFile.Close()
 		defer os.Remove(sgFile.Name())
 
-		sgs := []struct {
-			Protocol    string `json:"protocol"`
-			Destination string `json:"destination"`
-			Ports       string `json:"ports"`
-		}{
-			{"tcp", destination, ports},
+		sgs := make([]SecurityGroup, 0)
+
+		for _, destination := range destinations {
+			sgs = append(sgs, SecurityGroup{Protocol: "tcp", Destination: destination, Ports: ports})
 		}
 
 		err = json.NewEncoder(sgFile).Encode(sgs)
@@ -243,22 +247,23 @@ func (cf *CF) CreateAndBindSecurityGroup(securityGroup, serviceName, org, space 
 	}
 }
 
-func (cf *CF) securityGroupDestination(serviceName string) (string, string) {
+func (cf *CF) securityGroupDestination(serviceName string) ([]string, string) {
 	serviceGuid := cf.getServiceInstanceGuid(serviceName)
 	creds := cf.getServiceKeyCredentials(serviceGuid)
 
-	destination := "0.0.0.0/0"
+	destinations := []string{"0.0.0.0/0"}
 	if os.Getenv("ENABLE_ALL_DESTINATIONS") != "true" {
 		session := helpers.Run("dig", "+short", creds.Host)
 		Eventually(session, 10*time.Second).Should(gexec.Exit(0))
-		ip := strings.TrimSpace(string(session.Out.Contents()))
+		ips := strings.Split(string(session.Out.Contents()), "\n")
 
-		if ip != "" {
-			destination = ip
+		if len(ips) != 0 {
+			destinations = ips
 		} else {
-			destination = creds.Host
+			destinations = []string{creds.Host}
 		}
 	}
+	//TODO: add sentinel port support
 	var ports string
 	if creds.Port != 0 {
 		ports = fmt.Sprintf("%d", creds.Port)
@@ -271,7 +276,7 @@ func (cf *CF) securityGroupDestination(serviceName string) (string, string) {
 		}
 	}
 
-	return destination, ports
+	return destinations, ports
 }
 
 // DeleteSecurityGroup is equivalent to `cf delete-security-group {securityGroup} -f`
