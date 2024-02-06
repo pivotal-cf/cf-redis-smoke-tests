@@ -229,7 +229,10 @@ func (cf *CF) CreateAndBindSecurityGroup(securityGroup, serviceName, org, space 
 		sgs := make([]SecurityGroup, 0)
 
 		for _, destination := range destinations {
-			sgs = append(sgs, SecurityGroup{Protocol: "tcp", Destination: destination, Ports: ports})
+			dest := strings.TrimSpace(destination)
+			if dest != "" {
+				sgs = append(sgs, SecurityGroup{Protocol: "tcp", Destination: dest, Ports: ports})
+			}
 		}
 
 		err = json.NewEncoder(sgFile).Encode(sgs)
