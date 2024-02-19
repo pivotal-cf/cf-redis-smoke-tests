@@ -25,11 +25,19 @@ type CF struct {
 	RetryBackoff retry.Backoff
 }
 
+type HostPort struct {
+	Host    string `json:"host"`
+	Port    int    `json:"port"`
+	TLSPort int    `json:"tls_port"`
+}
+
 type Credentials struct {
-	Host         string
-	Port         int
-	TLS_Port     int
-	TLS_Versions []string
+	Host         string     `json:"host"`
+	Port         int        `json:"port"`
+	TLS_Port     int        `json:"tls_port"`
+	TLS_Versions []string   `json:"tls_versions"`
+	MasterName   string     `json:"master_name,omitempty"`
+	Sentinels    []HostPort `json:"sentinels,omitempty"`
 }
 
 type SecurityGroup struct {
@@ -254,19 +262,32 @@ func (cf *CF) securityGroupDestination(serviceName string) ([]string, string) {
 	serviceGuid := cf.getServiceInstanceGuid(serviceName)
 	creds := cf.getServiceKeyCredentials(serviceGuid)
 
+	var destinations []string
+	var ports string
+
+	if creds.Host != "" {
+		destinations, ports = getDefaultHostsPorts(creds)
+	} else {
+		destinations, ports = getSentinelHostPorts(creds)
+	}
+
+	return destinations, ports
+}
+
+func getDefaultHostsPorts(creds Credentials) ([]string, string) {
 	destinations := []string{"0.0.0.0/0"}
+
 	if os.Getenv("ENABLE_ALL_DESTINATIONS") != "true" {
 		session := helpers.Run("dig", "+short", creds.Host)
 		Eventually(session, 10*time.Second).Should(gexec.Exit(0))
 		ips := strings.Split(string(session.Out.Contents()), "\n")
-
 		if len(ips) != 0 {
 			destinations = ips
 		} else {
 			destinations = []string{creds.Host}
 		}
 	}
-	//TODO: add sentinel port support
+
 	var ports string
 	if creds.Port != 0 {
 		ports = fmt.Sprintf("%d", creds.Port)
@@ -277,6 +298,41 @@ func (cf *CF) securityGroupDestination(serviceName string) ([]string, string) {
 		} else {
 			ports = fmt.Sprintf("%d", creds.TLS_Port)
 		}
+	}
+
+	return destinations, ports
+}
+
+func getSentinelHostPorts(creds Credentials) ([]string, string) {
+	destinations := []string{"0.0.0.0/0"}
+	for _, sentinel := range creds.Sentinels {
+		destination := sentinel.Host
+
+		session := helpers.Run("dig", "+short", sentinel.Host)
+		Eventually(session, 10*time.Second).Should(gexec.Exit(0))
+
+		ip := strings.TrimSpace(string(session.Out.Contents()))
+		if ip != "" {
+			destination = ip
+		}
+
+		destinations = append(destinations, destination)
+	}
+
+	var ports string
+
+	Expect(creds.Sentinels).To(HaveLen(3))
+
+	sentinel := creds.Sentinels[0]
+	redisPort, redisTLSPort := 6379, 16379 //TODO: check if there's a better way
+	if sentinel.Port != 0 {
+		ports = fmt.Sprintf("%d,%d", sentinel.Port, redisPort)
+	}
+	if sentinel.TLSPort != 0 {
+		if ports != "" {
+			ports += ","
+		}
+		ports += fmt.Sprintf("%d,%d", sentinel.TLSPort, redisTLSPort)
 	}
 
 	return destinations, ports
@@ -619,9 +675,21 @@ func (cf *CF) getServiceKeyCredentials(serviceGuid string) Credentials {
 
 	host, port := resp.Resources[0].Entity.Credentials.Host, resp.Resources[0].Entity.Credentials.Port
 	tlsPort := resp.Resources[0].Entity.Credentials.TLS_Port
-	Expect(host).NotTo(BeEmpty(), `{"FailReason": "Invalid service key, missing host"}`)
-	if tlsPort == 0 {
-		Expect(port).NotTo(BeZero(), `{"FailReason": "Invalid service key, missing port"}`)
+	sentinels := resp.Resources[0].Entity.Credentials.Sentinels
+
+	if len(sentinels) == 0 {
+		Expect(host).NotTo(BeEmpty(), `{"FailReason": "Invalid service key, missing host"}`)
+		if tlsPort == 0 {
+			Expect(port).NotTo(BeZero(), `{"FailReason": "Invalid service key, missing port"}`)
+		}
+	} else {
+		Expect(sentinels).To(HaveLen(3))
+		for _, sentinel := range sentinels {
+			Expect(sentinel.Host).NotTo(BeEmpty(), `{"FailReason": "Invalid service key, missing sentinel host"}`)
+			if sentinel.TLSPort == 0 {
+				Expect(sentinel.Port).NotTo(BeZero(), `{"FailReason": "Invalid service key, missing sentinel port"}`)
+			}
+		}
 	}
 
 	return resp.Resources[0].Entity.Credentials
