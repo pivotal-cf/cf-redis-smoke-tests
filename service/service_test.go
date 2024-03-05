@@ -145,7 +145,8 @@ var _ = Describe("Redis On-Demand", func() {
 
 	Context("service instance", func() {
 		Context("life-cycle", func() {
-			for _, planName = range redisConfig.PlanNames {
+			for _, currentPlan := range redisConfig.Plans {
+				planName = currentPlan.Name
 				Context("for "+strings.ToUpper(planName)+" plans:", func() {
 					AssertLifeCycleBehavior(planName)
 				})

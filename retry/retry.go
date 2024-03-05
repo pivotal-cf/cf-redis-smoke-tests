@@ -168,6 +168,17 @@ func MatchesOutput(regex *regexp.Regexp) Condition {
 	}
 }
 
+func (rc *retryCheck) FetchOutput() []byte {
+	time.Sleep(rc.backoff(0))
+	session := rc.sessionProvider().Wait(rc.sessionTimeout)
+
+	if session.ExitCode() != 0 {
+		return session.Err.Contents()
+	}
+
+	return session.Out.Contents()
+}
+
 func MatchesErrorOutput(regex *regexp.Regexp) Condition {
 	return func(session *gexec.Session) bool {
 		return regex.Match(session.Err.Contents())
