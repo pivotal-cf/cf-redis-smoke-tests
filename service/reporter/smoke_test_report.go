@@ -158,7 +158,7 @@ func (report *SmokeTestReport) SuiteDidEnd(summary *types.SuiteSummary) {
 				fmt.Printf("> %s\n", failMessage[1])
 			}
 		}
-		fmt.Printf("\nFor help with troubleshooting, visit: https://docs.pivotal.io/redis/smoke-tests.html\n\n")
+		fmt.Printf("\nFor help with troubleshooting, visit: https://docs.vmware.com/en/Redis-for-VMware-Tanzu-Application-Service/3.4/redis-tanzu-application-service/GUID-smoke-tests.html\n\n")
 	}
 }
 

@@ -60,7 +60,7 @@ var _ = Describe("Redis On-Demand", func() {
 					testCF.EnableServiceAccessForPlan(wfh.GetOrganizationName(), redisConfig.ServiceName, planName),
 				)
 				serviceCreateStep := reporter.NewStep(
-					fmt.Sprintf("Create a '%s' plan instance of Redis\n    Please refer to http://docs.pivotal.io/redis/smoke-tests.html for more help on diagnosing this issue", planName),
+					fmt.Sprintf("Create a '%s' plan instance of Redis\n    Please refer to https://docs.vmware.com/en/Redis-for-VMware-Tanzu-Application-Service/3.4/redis-tanzu-application-service/GUID-smoke-tests.html for more help on diagnosing this issue", planName),
 					testCF.CreateService(redisConfig.ServiceName, planName, serviceInstanceName, &skip),
 				)
 
