@@ -142,7 +142,6 @@ var _ = Describe("Redis HA", Label("ha"), func() {
 			} else {
 				performSteps(specSteps)
 			}
-
 		})
 
 		AfterEach(func() {
@@ -195,14 +194,22 @@ var _ = Describe("Redis HA", Label("ha"), func() {
 					app := redis.NewApp(uri, testCF.ShortTimeout, retryInterval)
 
 					if !skip {
+						if isSentinelTls(serviceKey) {
+							standardPortSpecs := []*reporter.Step{
+								reporter.NewStep("Enable tls", testCF.SetEnv(appName, "tls_enabled", "true")),
+								reporter.NewStep("Restage app", testCF.Restage(appName)),
+							}
+							smokeTestReporter.RegisterSpecSteps(standardPortSpecs)
+							performSteps(standardPortSpecs)
+						}
 						standardPortSpecs := []*reporter.Step{
 							reporter.NewStep(
 								"Write a key/value pair to Redis",
-								app.Write("mykey", "myvalue"),
+								app.Write("ha-test", "failover-case"),
 							),
 							reporter.NewStep(
 								"Read the key/value pair back",
-								app.ReadAssert("mykey", "myvalue"),
+								app.ReadAssert("ha-test", "failover-case"),
 							),
 						}
 						smokeTestReporter.RegisterSpecSteps(standardPortSpecs)
@@ -219,7 +226,7 @@ var _ = Describe("Redis HA", Label("ha"), func() {
 						performCrossValidation(master, newMaster, replicas, newReplicas)
 
 						smokeTestReporter.RegisterSpecSteps(standardPortSpecs)
-						performSteps(standardPortSpecs)
+						performSteps(standardPortSpecs[1:])
 					}
 				})
 			}

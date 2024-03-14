@@ -106,6 +106,14 @@ var _ = Describe("Redis On-Demand", func() {
 				}
 
 				if !skip && !tlsEnforced(serviceKey) {
+					if isSentinelTls(serviceKey) {
+						standardPortSpecs := []*reporter.Step{
+							reporter.NewStep("Enable tls", testCF.SetEnv(appName, "tls_enabled", "true")),
+							reporter.NewStep("Restage app", testCF.Restage(appName)),
+						}
+						smokeTestReporter.RegisterSpecSteps(standardPortSpecs)
+						performSteps(standardPortSpecs)
+					}
 					standardPortSpecs := []*reporter.Step{
 						reporter.NewStep(
 							"Write a key/value pair to Redis",
@@ -249,11 +257,15 @@ func hasTLSVersion(serviceKey smokeTestCF.Credentials, version string) bool {
 }
 
 func tlsEnabled(serviceKey smokeTestCF.Credentials) bool {
-	return (serviceKey.TLS_Port > 0)
+	return serviceKey.TLS_Port > 0
 }
 
 func tlsEnforced(serviceKey smokeTestCF.Credentials) bool {
 	return serviceKey.TLS_Port > 0 && serviceKey.Port == 0
+}
+
+func isSentinelTls(serviceKey smokeTestCF.Credentials) bool {
+	return serviceKey.Sentinels[0].TLSPort > 0
 }
 
 func performSteps(specSteps []*reporter.Step) {
