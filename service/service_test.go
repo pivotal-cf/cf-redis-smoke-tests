@@ -265,7 +265,10 @@ func tlsEnforced(serviceKey smokeTestCF.Credentials) bool {
 }
 
 func isSentinelTls(serviceKey smokeTestCF.Credentials) bool {
-	return serviceKey.Sentinels[0].TLSPort > 0
+	if len(serviceKey.Sentinels) > 0 {
+		return serviceKey.Sentinels[0].TLSPort > 0
+	}
+	return false
 }
 
 func performSteps(specSteps []*reporter.Step) {
