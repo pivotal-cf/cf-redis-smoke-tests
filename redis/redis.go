@@ -96,12 +96,3 @@ func (app *App) ReadTLSAssert(tlsVersion, key, expectedValue string) func() {
 		)
 	}
 }
-
-func (app *App) Read(key string) []byte {
-	curlFn := func() *gexec.Session {
-		fmt.Printf("\nGetting from url: %s\n", app.keyURI(key))
-		return helpers.CurlSkipSSL(true, app.keyURI(key))
-	}
-
-	return retry.Session(curlFn).FetchOutput()
-}

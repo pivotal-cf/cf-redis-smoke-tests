@@ -41,11 +41,6 @@ func (rc retryConfig) MaxRetries() int {
 	return int(rc.Attempts)
 }
 
-type plan struct {
-	Name      string `json:"name"`
-	HAEnabled bool   `json:"ha"`
-}
-
 type redisTestConfig struct {
 	config.Config
 
@@ -55,7 +50,6 @@ type redisTestConfig struct {
 	TLSEnabled  bool        `json:"tls_enabled"`
 	TLSVersions []string    `json:"tls_versions"`
 	UseHttpApp  bool        `json:"use_http_app_smoke_tests"`
-	Plans       []plan      `json:"plans"`
 }
 
 func loadRedisTestConfig(path string) redisTestConfig {
