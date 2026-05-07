@@ -11,7 +11,7 @@
   "use_existing_user": true,
   "existing_user": "admin",
   "existing_user_password": "admin",
-  "service_name": "p-redis",
+  "service_name": "p-valkey",
   "plan_names": [
     "shared-vm",
     "dedicated-vm"
