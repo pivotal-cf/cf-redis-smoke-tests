@@ -1,6 +1,6 @@
 module github.com/pivotal-cf/cf-redis-smoke-tests
 
-go 1.27
+go 1.27.1
 
 require (
 	github.com/cloudfoundry/cf-test-helpers/v2 v2.15.0
